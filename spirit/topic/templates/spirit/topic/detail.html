@@ -95,7 +95,7 @@
         </div>
 
         {% if user.is_authenticated %}
-            {% if not topic.is_closed %}
+            {% if not topic.is_closed and topic.can_comment %}
                 <div id="reply" class="reply">
 
                     <div class="comment-media">

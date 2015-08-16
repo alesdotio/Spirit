@@ -60,6 +60,13 @@ class Category(models.Model):
         else:
             return False
 
+    def set_can_topic_attr(self, user):
+        group_ids = user.groups.all().values_list('id', flat=True)
+        setattr(self, 'can_topic', True)
+        if self.restrict_topic.exists():
+            setattr(self, 'can_topic', self.restrict_topic.through.objects.filter(
+                category_id=self.id, group_id__in=group_ids).exists())
+
 
 # def topic_posted_handler(sender, topic, **kwargs):
 #    if topic.category.is_subcategory:

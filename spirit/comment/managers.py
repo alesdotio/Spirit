@@ -29,12 +29,24 @@ class CommentQuerySet(models.QuerySet):
         return self.filter(topic__category__is_private=False)
 
     def visible(self, user):
-        return self.unremoved().public().for_user(user)
+        return self.unremoved().public().can_access(user)
 
-    def for_user(self, user):
+    def can_access(self, user):
         return self.filter(
             Q(topic__category__restrict_access=None) |
             Q(topic__category__restrict_access__contains=user.groups.all())
+        )
+
+    def can_topic(self, user):
+        return self.filter(
+            Q(topic__category__restrict_topic=None) |
+            Q(topic__category__restrict_topic__contains=user.groups.all())
+        )
+
+    def can_comment(self, user):
+        return self.filter(
+            Q(topic__category__restrict_comment=None) |
+            Q(topic__category__restrict_comment__contains=user.groups.all())
         )
 
     def for_topic(self, topic):
@@ -58,4 +70,4 @@ class CommentQuerySet(models.QuerySet):
         if user.st.is_moderator:
             return get_object_or_404(self._access(user=user), pk=pk)
         else:
-            return get_object_or_404(self.for_access(user), user=user, pk=pk)
+            return get_object_or_404(self.for_access(user).can_comment(user), user=user, pk=pk)

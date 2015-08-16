@@ -25,7 +25,7 @@ from . import utils
 @ratelimit(rate='1/10s')
 def publish(request, category_id=None):
     if category_id:
-        get_object_or_404(Category.objects.visible(request.user),
+        get_object_or_404(Category.objects.visible(request.user).can_topic(request.user),
                           pk=category_id)
 
     if request.method == 'POST':
@@ -92,6 +92,7 @@ def update(request, pk):
 
 def detail(request, pk, slug):
     topic = Topic.objects.get_public_or_404(pk, request.user)
+    topic.set_can_comment_attr(request.user)
 
     if topic.slug != slug:
         return HttpResponsePermanentRedirect(topic.get_absolute_url())

@@ -16,6 +16,7 @@ from .models import Category
 def detail(request, pk, slug):
     category = get_object_or_404(Category.objects.visible(request.user),
                                  pk=pk)
+    category.set_can_topic_attr(request.user)
 
     if category.slug != slug:
         return HttpResponsePermanentRedirect(category.get_absolute_url())

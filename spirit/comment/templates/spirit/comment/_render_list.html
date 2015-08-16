@@ -68,8 +68,10 @@
                             {% endif %}
 
                             {% ifnotequal c.user.pk user.pk %}
-                                <li><a href="{% url "spirit:comment:publish" topic_id=topic.pk pk=c.pk %}" >{% trans "quote" %}</a></li>
-                                <li><a href="#reply" >{% trans "reply" %}</a></li>
+								{% if topic.can_comment %}
+									<li><a href="{% url "spirit:comment:publish" topic_id=topic.pk pk=c.pk %}" >{% trans "quote" %}</a></li>
+									<li><a href="#reply" >{% trans "reply" %}</a></li>
+								{% endif %}
                             {% endifnotequal %}
                         {% endif %}
                     </ul>

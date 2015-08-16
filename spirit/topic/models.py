@@ -75,3 +75,10 @@ class Topic(models.Model):
         Topic.objects\
             .filter(pk=self.pk)\
             .update(comment_count=F('comment_count') - 1)
+
+    def set_can_comment_attr(self, user):
+        group_ids = user.groups.all().values_list('id', flat=True)
+        setattr(self, 'can_comment', True)
+        if self.category.restrict_comment.exists():
+            setattr(self, 'can_comment', self.category.restrict_comment.through.objects.filter(
+                category_id=self.category_id, group_id__in=group_ids).exists())

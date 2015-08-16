@@ -16,12 +16,24 @@ class CategoryQuerySet(models.QuerySet):
         return self.filter(is_private=False)
 
     def visible(self, user):
-        return self.unremoved().public().for_user(user)
+        return self.unremoved().public().can_access(user)
 
-    def for_user(self, user):
+    def can_access(self, user):
         return self.filter(
             Q(restrict_access=None) |
             Q(restrict_access__contains=user.groups.all())
+        )
+
+    def can_topic(self, user):
+        return self.filter(
+            Q(restrict_topic=None) |
+            Q(restrict_topic__contains=user.groups.all())
+        )
+
+    def can_comment(self, user):
+        return self.filter(
+            Q(restrict_comment=None) |
+            Q(restrict_comment__contains=user.groups.all())
         )
 
     def opened(self):

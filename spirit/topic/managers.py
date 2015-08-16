@@ -20,12 +20,24 @@ class TopicQuerySet(models.QuerySet):
         return self.filter(category__is_private=False)
 
     def visible(self, user):
-        return self.unremoved().public().for_user(user)
+        return self.unremoved().public().can_access(user)
 
-    def for_user(self, user):
+    def can_access(self, user):
         return self.filter(
             Q(category__restrict_access=None) |
             Q(category__restrict_access__contains=user.groups.all())
+        )
+
+    def can_topic(self, user):
+        return self.filter(
+            Q(category__restrict_topic=None) |
+            Q(category__restrict_topic__contains=user.groups.all())
+        )
+
+    def can_comment(self, user):
+        return self.filter(
+            Q(category__restrict_comment=None) |
+            Q(category__restrict_comment__contains=user.groups.all())
         )
 
     def opened(self):
@@ -41,7 +53,7 @@ class TopicQuerySet(models.QuerySet):
         return self.filter(Q(category__is_private=False) | Q(topics_private__user=user))
 
     def for_access(self, user):
-        return self.unremoved()._access(user=user)
+        return self.unremoved()._access(user=user).can_topic(user)
 
     def for_unread(self, user):
         return self.filter(topicunread__user=user,
@@ -71,4 +83,4 @@ class TopicQuerySet(models.QuerySet):
         if user.st.is_moderator:
             return get_object_or_404(self.public(), pk=pk)
         else:
-            return get_object_or_404(self.visible(user).opened(), pk=pk, user=user)
+            return get_object_or_404(self.visible(user).can_topic(user).opened(), pk=pk, user=user)
