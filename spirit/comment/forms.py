@@ -12,11 +12,12 @@ from django.utils.translation import ugettext_lazy as _
 
 from ..core import utils
 from ..core.utils.markdown import Markdown
-from .models import Comment
+from .models import Comment, COMMENT_MAX_LEN
 from ..topic.models import Topic
 
 
 class CommentForm(forms.ModelForm):
+    comment = forms.CharField(widget=forms.Textarea, max_length=COMMENT_MAX_LEN)
 
     class Meta:
         model = Comment
