@@ -13,7 +13,7 @@ User = get_user_model()
 
 
 class RegistrationForm(EmailUniqueMixin, UserCreationForm):
-
+    email = forms.CharField(label=_("Email"), widget=forms.EmailInput)
     honeypot = forms.CharField(label=_("Leave blank"), required=False)
 
     class Meta:
