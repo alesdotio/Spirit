@@ -13,7 +13,10 @@ User = get_user_model()
 
 
 class RegistrationForm(EmailUniqueMixin, UserCreationForm):
-    email = forms.CharField(label=_("Email"), widget=forms.EmailInput)
+    email = forms.EmailField(label=_("Email"), widget=forms.EmailInput,
+        help_text=_("To activate your account you will have to click the link we will send to this address."))
+    password1 = forms.CharField(label=_("Password"), widget=forms.PasswordInput, min_length=6,
+        help_text=_("Please use a strong password, 6 characters or more."))
     honeypot = forms.CharField(label=_("Leave blank"), required=False)
 
     class Meta:
@@ -40,6 +43,18 @@ class RegistrationForm(EmailUniqueMixin, UserCreationForm):
             raise forms.ValidationError(_("The username is taken."))
 
         return username
+
+    def clean_email(self):
+        email = self.cleaned_data["email"]
+
+        is_taken = User._default_manager\
+            .filter(email=email)\
+            .exists()
+
+        if is_taken:
+            raise forms.ValidationError(_("A user with this email already exists."))
+
+        return email
 
     def save(self, commit=True):
         self.instance.is_active = False
