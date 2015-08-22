@@ -4,10 +4,11 @@ from __future__ import unicode_literals
 
 from django.conf.urls import url
 from django.contrib.auth import views as django_views
+from django.contrib.auth.forms import PasswordResetForm
 from django.core.urlresolvers import reverse_lazy
 
 from . import views
-
+from .forms import CustomPasswordResetForm
 
 urlpatterns = [
     url(r'^login/$', views.custom_login, {'template_name': 'spirit/user/auth/login.html'}, name='login'),
@@ -23,7 +24,8 @@ urlpatterns = [
             'template_name': 'spirit/user/auth/password_reset_form.html',
             'email_template_name': 'spirit/user/auth/password_reset_email.html',
             'subject_template_name': 'spirit/user/auth/password_reset_subject.txt',
-            'post_reset_redirect': reverse_lazy('spirit:user:auth:password-reset-done')
+            'post_reset_redirect': reverse_lazy('spirit:user:auth:password-reset-done'),
+            'password_reset_form': CustomPasswordResetForm
         }, name='password-reset'),
     url(r'^password-reset/done/$', django_views.password_reset_done,
         {'template_name': 'spirit/user/auth/password_reset_done.html', },

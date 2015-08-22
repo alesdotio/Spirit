@@ -4,8 +4,10 @@ from __future__ import unicode_literals
 from smtplib import SMTPException
 import logging
 
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMessage, EmailMultiAlternatives
 from django.contrib.sites.shortcuts import get_current_site
+from django.template import Context, Template
+from django.utils.encoding import force_unicode
 from django.utils.translation import ugettext as _
 from django.template.loader import render_to_string
 
@@ -22,6 +24,9 @@ def sender(request, subject, template_name, context, to):
         'protocol': 'https' if request.is_secure() else 'http'
     })
     message = render_to_string(template_name, context)
+    html_context = Context({
+        'content': message
+    })
     from_email = "{site_name} <{name}@{domain}>".format(name="noreply", domain=site.domain, site_name=site.name)
 
     if len(to) > 1:
@@ -29,8 +34,8 @@ def sender(request, subject, template_name, context, to):
     else:
         kwargs = {'to': to, }
 
-    # TODO: use EmailMultiAlternatives
-    email = EmailMessage(subject, message, from_email, **kwargs)
+    email = EmailMultiAlternatives(subject, message, from_email, **kwargs)
+    email.attach_alternative(content=render_to_string("spirit/_base_email.html", html_context), mimetype="text/html")
 
     try:
         email.send()

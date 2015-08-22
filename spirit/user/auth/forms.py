@@ -4,7 +4,10 @@ from __future__ import unicode_literals
 
 from django import forms
 from django.contrib.auth import get_user_model
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordResetForm
+from django.core.mail import EmailMultiAlternatives
+from django.template import Context
+from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _
 
 from ..forms import EmailUniqueMixin
@@ -64,6 +67,31 @@ class RegistrationForm(EmailUniqueMixin, UserCreationForm):
 class LoginForm(AuthenticationForm):
 
     username = forms.CharField(label=_("Username or Email"), max_length=254)
+
+
+class CustomPasswordResetForm(PasswordResetForm):
+
+    def send_mail(self, subject_template_name, email_template_name,
+                  context, from_email, to_email, html_email_template_name=None):
+        """
+        Sends a django.core.mail.EmailMultiAlternatives to `to_email`.
+        """
+        subject = render_to_string(subject_template_name, context)
+        # Email subject *must not* contain newlines
+        subject = ''.join(subject.splitlines())
+        body = render_to_string(email_template_name, context)
+
+        email_message = EmailMultiAlternatives(subject, body, from_email, [to_email])
+        if html_email_template_name is not None:
+            html_email = render_to_string(html_email_template_name, context)
+            email_message.attach_alternative(html_email, 'text/html')
+        else:
+            html_context = Context({
+                'content': body
+            })
+            email_message.attach_alternative(content=render_to_string("spirit/_base_email.html", html_context), mimetype='text/html')
+
+        email_message.send()
 
 
 class ResendActivationForm(forms.Form):
