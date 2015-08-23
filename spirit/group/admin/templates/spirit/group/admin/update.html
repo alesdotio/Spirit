@@ -11,6 +11,8 @@
     <form action="." method="post">
         {% csrf_token %}
         {% include "spirit/_form.html" %}
+        <label>{% trans 'Members' %}:</label>
+        <p>{% for user in form.instance.user_set.all %}<a href="{% url "spirit:admin:user:edit" user_id=user.pk %}">{{ user.username }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</p>
 
         <input class="button" type="submit" name="post" value="{% trans "Save" %}" />
     </form>

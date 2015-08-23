@@ -14,7 +14,10 @@ class UserForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ("username", "email", "is_active")
+        fields = ("username", "email", "is_active", "groups")
+        widgets = {
+            'groups': forms.CheckboxSelectMultiple
+        }
 
 
 class UserProfileForm(forms.ModelForm):
