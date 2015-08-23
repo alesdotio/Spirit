@@ -36,6 +36,8 @@ ST_UNIQUE_EMAILS = True
 
 ST_BASE_DIR = os.path.dirname(__file__)
 
+ST_INVALID_USERNAMES = []
+
 #
 # Django & Spirit settings defined below...
 #

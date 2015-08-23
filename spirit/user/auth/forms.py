@@ -9,6 +9,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template import Context
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _
+from django.conf import settings
 
 from ..forms import EmailUniqueMixin
 
@@ -38,8 +39,11 @@ class RegistrationForm(EmailUniqueMixin, UserCreationForm):
     def clean_username(self):
         username = self.cleaned_data["username"]
 
+        if username.lower() in settings.ST_INVALID_USERNAMES:
+            raise forms.ValidationError(_("The username is invalid."))
+
         is_taken = User._default_manager\
-            .filter(username=username)\
+            .filter(username__iexact=username)\
             .exists()
 
         if is_taken:
@@ -51,7 +55,7 @@ class RegistrationForm(EmailUniqueMixin, UserCreationForm):
         email = self.cleaned_data["email"]
 
         is_taken = User._default_manager\
-            .filter(email=email)\
+            .filter(email__iexact=email)\
             .exists()
 
         if is_taken:
