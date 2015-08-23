@@ -56,6 +56,9 @@ INSTALLED_APPS = [
     'spirit.user.admin',
     'spirit.user.auth',
 
+    'spirit.group',
+    'spirit.group.admin',
+
     'spirit.category',
     'spirit.category.admin',
 

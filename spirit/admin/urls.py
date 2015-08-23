@@ -9,6 +9,7 @@ import spirit.category.admin.urls
 import spirit.comment.flag.admin.urls
 import spirit.topic.admin.urls
 import spirit.user.admin.urls
+import spirit.group.admin.urls
 
 
 urlpatterns = [
@@ -20,4 +21,5 @@ urlpatterns = [
     url(r'^comment/flag/', include(spirit.comment.flag.admin.urls, namespace='flag')),
     url(r'^topic/', include(spirit.topic.admin.urls, namespace='topic')),
     url(r'^user/', include(spirit.user.admin.urls, namespace='user')),
+    url(r'^group/', include(spirit.group.admin.urls, namespace='group')),
 ]

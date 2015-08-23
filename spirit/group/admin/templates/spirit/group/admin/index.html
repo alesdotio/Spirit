@@ -1,0 +1,27 @@
+{% extends "spirit/_base.html" %}
+
+{% load i18n %}
+
+{% block title %}{% trans "Group list" %}{% endblock %}
+
+{% block content %}
+
+    {% include "spirit/admin/_side_menu.html" with active="groups" %}
+
+    <h1 class="headline">{% trans "Group list" %}</h1>
+
+    <a class="button" href="{% url "spirit:admin:group:create" %}">{% trans "Create Group" %}</a>
+
+    <div class="rows">
+
+        {% for g in groups %}
+            <div class="row">
+                {{ g.name }}
+
+                <a class="row-edit" href="{% url "spirit:admin:group:update" group_id=g.pk %}"><i class="fa fa-cog"></i> {% trans "edit" %}</a>
+            </div>
+        {% endfor %}
+
+	</div>
+
+{% endblock %}
