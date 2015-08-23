@@ -1,0 +1,35 @@
+<script>
+jQuery(document).ready(function() {
+	var containerSelector = "{{ field_container_selector|default:'.field' }}";
+	var restrictions = {
+		'access': {
+			'checkbox': $('#id_enable_restrict_access'),
+			'field': $('#id_restrict_access')
+		},
+		'topic': {
+			'checkbox': $('#id_enable_restrict_topic'),
+			'field': $('#id_restrict_topic')
+		},
+		'comment': {
+			'checkbox': $('#id_enable_restrict_comment'),
+			'field': $('#id_restrict_comment')
+		}
+	};
+
+	$.each(restrictions, function(k, res) {
+		if (res.checkbox.is(':checked')) {
+			res.field.closest(containerSelector).show();
+		} else {
+			res.field.closest(containerSelector).hide();
+		}
+		res.checkbox.on('change', function() {
+			if ($(this).is(':checked')) {
+				res.field.closest(containerSelector).show();
+			} else {
+				res.field.val(null);
+				res.field.closest(containerSelector).hide();
+			}
+		});
+	});
+});
+</script>

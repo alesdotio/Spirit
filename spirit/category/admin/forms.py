@@ -10,10 +10,16 @@ from ..models import Category
 
 
 class CategoryForm(forms.ModelForm):
+    enable_restrict_access = forms.BooleanField(initial=False, required=False, label=_('Limit who can access'))
+    enable_restrict_topic = forms.BooleanField(initial=False, required=False, label=_('Limit who can create topics'))
+    enable_restrict_comment = forms.BooleanField(initial=False, required=False, label=_('Limit who can comment'))
 
     class Meta:
         model = Category
-        fields = ("parent", "title", "description", "order", "is_closed", "is_removed")
+        fields = ("parent", "title", "description", "order", "is_closed", "is_removed",
+                  "enable_restrict_access", "restrict_access",
+                  "enable_restrict_topic", "restrict_topic",
+                  "enable_restrict_comment", "restrict_comment")
 
     def __init__(self, user, *args, **kwargs):
         super(CategoryForm, self).__init__(*args, **kwargs)
@@ -21,6 +27,9 @@ class CategoryForm(forms.ModelForm):
 
         if self.instance.pk:
             queryset = queryset.exclude(pk=self.instance.pk)
+            self.fields['enable_restrict_access'].initial = self.instance.restrict_access.exists()
+            self.fields['enable_restrict_topic'].initial = self.instance.restrict_topic.exists()
+            self.fields['enable_restrict_comment'].initial = self.instance.restrict_comment.exists()
 
         self.fields['parent'] = forms.ModelChoiceField(queryset=queryset, required=False)
         self.fields['parent'].label_from_instance = lambda obj: smart_text(obj.title)
