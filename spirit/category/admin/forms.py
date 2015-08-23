@@ -20,6 +20,11 @@ class CategoryForm(forms.ModelForm):
                   "enable_restrict_access", "restrict_access",
                   "enable_restrict_topic", "restrict_topic",
                   "enable_restrict_comment", "restrict_comment")
+        widgets = {
+            'restrict_access': forms.CheckboxSelectMultiple,
+            'restrict_topic': forms.CheckboxSelectMultiple,
+            'restrict_comment': forms.CheckboxSelectMultiple,
+        }
 
     def __init__(self, user, *args, **kwargs):
         super(CategoryForm, self).__init__(*args, **kwargs)
