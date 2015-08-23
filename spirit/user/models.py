@@ -26,6 +26,7 @@ class UserProfile(models.Model):
                                       help_text=_('Designates whether the user has verified his '
                                                   'account by email or by other means. Un-select this '
                                                   'to let the user activate his account.'))
+    title = models.CharField(_("title"), max_length=128, blank=True)
 
     topic_count = models.PositiveIntegerField(_("topic count"), default=0)
     comment_count = models.PositiveIntegerField(_("comment count"), default=0)
