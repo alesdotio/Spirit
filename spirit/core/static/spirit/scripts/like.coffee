@@ -50,7 +50,7 @@ class Like
     count += 1
     @el.data 'count', count
     removeLikeText = $.format @options.removeLikeText, {count: count, }
-    @el.text removeLikeText
+    @el.html removeLikeText
 
   removeLike: (data) =>
     @el.attr 'href', data.url_create
@@ -58,7 +58,7 @@ class Like
     count -= 1
     @el.data 'count', count
     likeText = $.format @options.likeText, {count: count, }
-    @el.text likeText
+    @el.html likeText
 
   apiError: =>
     @el.text "api error"
