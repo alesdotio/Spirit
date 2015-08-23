@@ -18,7 +18,7 @@ from .utils.email import send_email_change_email
 from .utils.tokens import UserEmailChangeTokenGenerator
 from ..topic.models import Topic
 from ..comment.models import Comment
-from .forms import UserProfileForm, EmailChangeForm, UserForm, EmailCheckForm
+from .forms import UserProfileForm, EmailChangeForm, UserForm, EmailCheckForm, AvatarChangeForm
 
 User = get_user_model()
 
@@ -44,6 +44,23 @@ def update(request):
     }
 
     return render(request, 'spirit/user/profile_update.html', context)
+
+
+@login_required
+def avatar_change(request):
+    if request.method == 'POST':
+        form = AvatarChangeForm(data=request.POST, files=request.FILES, instance=request.user.st)
+
+        if form.is_valid():
+            form.save()
+            messages.info(request, _("Your avatar has been changed!"))
+            return redirect(reverse('spirit:user:update'))
+    else:
+        form = AvatarChangeForm(instance=request.user.st)
+
+    context = {'form': form, }
+
+    return render(request, 'spirit/user/profile_avatar_change.html', context)
 
 
 @login_required

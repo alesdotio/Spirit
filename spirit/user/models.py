@@ -7,9 +7,33 @@ from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
+from django.utils.deconstruct import deconstructible
+import hashlib
 
 from ..core.utils.timezone import TIMEZONE_CHOICES
 from ..core.utils.models import AutoSlugField
+
+
+AVATAR_CHOICES = getattr(settings, 'ST_AVATAR_CHOICES', (
+    ('gravatar', _('gravatar.com')),
+    ('file', _('uploaded file')),
+))
+
+
+@deconstructible
+class UploadToHandler(object):
+
+    def __init__(self, prefix, instance_attribute):
+        self.prefix = prefix
+        self.instance_attribute = instance_attribute
+
+    def __call__(self, instance, filename):
+        return u"%s/%s/%s.%s" % (
+            self.prefix,
+            getattr(instance, self.instance_attribute),
+            hashlib.md5(filename.encode("utf-8")).hexdigest(),
+            unicode(filename.replace('/', '').split('.')[-1:][0])[:4]
+        )
 
 
 class UserProfile(models.Model):
@@ -27,6 +51,8 @@ class UserProfile(models.Model):
                                                   'account by email or by other means. Un-select this '
                                                   'to let the user activate his account.'))
     title = models.CharField(_("title"), max_length=128, blank=True)
+    avatar = models.ImageField(_("avatar"), blank=True, null=True, upload_to=UploadToHandler('avatars', 'pk'))
+    avatar_chosen = models.CharField(_("use avatar from"), max_length=32, choices=AVATAR_CHOICES, default=AVATAR_CHOICES[0][0])
 
     topic_count = models.PositiveIntegerField(_("topic count"), default=0)
     comment_count = models.PositiveIntegerField(_("comment count"), default=0)

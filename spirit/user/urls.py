@@ -10,6 +10,7 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.update, name='update'),
+    url(r'^avatar-change/$', views.avatar_change, name='avatar-change'),
     url(r'^password-change/$', views.password_change, name='password-change'),
     url(r'^email-change/$', views.email_change, name='email-change'),
     url(r'^email-change/(?P<token>[0-9A-Za-z_\-\.]+)/$', views.email_change_confirm, name='email-change-confirm'),

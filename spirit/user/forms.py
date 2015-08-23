@@ -78,3 +78,13 @@ class UserProfileForm(forms.ModelForm):
             'date': defaultfilters.date(now),
             'time': defaultfilters.time(now)
         }
+
+
+class AvatarChangeForm(forms.ModelForm):
+
+    class Meta:
+        model = UserProfile
+        fields = ("avatar_chosen", "avatar")
+        widgets = {
+            'avatar_chosen': forms.RadioSelect
+        }

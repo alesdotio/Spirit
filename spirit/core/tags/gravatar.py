@@ -16,3 +16,11 @@ def get_gravatar_url(user, size, rating='g', default='identicon'):
                       ('s', str(size)),
                       ('r', rating)])
     return "".join((url, hash, '?', data))
+
+
+@register.simple_tag()
+def get_avatar_url(user, size):
+    if user.st.avatar_chosen == 'file' and user.st.avatar:
+        return user.st.avatar.url  # TODO: thumbnails
+    else:
+        return get_gravatar_url(user, size)
