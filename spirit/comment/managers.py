@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
+from django.contrib.auth.models import Group
 
 from django.db import models
 from django.shortcuts import get_object_or_404
@@ -28,13 +29,17 @@ class CommentQuerySet(models.QuerySet):
     def public(self):
         return self.filter(topic__category__is_private=False)
 
-    def visible(self, user):
+    def visible(self, user=None):
         return self.unremoved().public().can_access(user)
 
-    def can_access(self, user):
+    def can_access(self, user=None):
+        if user:
+            groups = user.groups.all()
+        else:
+            groups = Group.objects.none()
         return self.filter(
             Q(topic__category__restrict_access=None) |
-            Q(topic__category__restrict_access__contains=user.groups.all())
+            Q(topic__category__restrict_access__contains=groups)
         )
 
     def can_topic(self, user):

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
+from django.contrib.auth.models import Group
 
 from django.db import models
 from django.db.models import Q
@@ -15,13 +16,17 @@ class CategoryQuerySet(models.QuerySet):
     def public(self):
         return self.filter(is_private=False)
 
-    def visible(self, user):
+    def visible(self, user=None):
         return self.unremoved().public().can_access(user)
 
-    def can_access(self, user):
+    def can_access(self, user=None):
+        if user:
+            groups = user.groups.all()
+        else:
+            groups = Group.objects.none()
         return self.filter(
             Q(restrict_access=None) |
-            Q(restrict_access__contains=user.groups.all())
+            Q(restrict_access__contains=groups)
         )
 
     def can_topic(self, user):

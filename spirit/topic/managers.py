@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
+from django.contrib.auth.models import Group
 
 from django.db import models
 from django.shortcuts import get_object_or_404
@@ -19,13 +20,17 @@ class TopicQuerySet(models.QuerySet):
     def public(self):
         return self.filter(category__is_private=False)
 
-    def visible(self, user):
+    def visible(self, user=None):
         return self.unremoved().public().can_access(user)
 
-    def can_access(self, user):
+    def can_access(self, user=None):
+        if user:
+            groups = user.groups.all()
+        else:
+            groups = Group.objects.none()
         return self.filter(
             Q(category__restrict_access=None) |
-            Q(category__restrict_access__contains=user.groups.all())
+            Q(category__restrict_access__contains=groups)
         )
 
     def can_topic(self, user):
