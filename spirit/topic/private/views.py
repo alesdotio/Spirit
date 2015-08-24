@@ -74,6 +74,7 @@ def detail(request, topic_id, slug):
                                       topic_id=topic_id,
                                       user=request.user)
     topic = topic_private.topic
+    topic.set_can_comment_attr(request.user)
 
     if topic.slug != slug:
         return HttpResponsePermanentRedirect(topic.get_absolute_url())
