@@ -10,7 +10,6 @@ from ...topic.notification import tags as topic_notification
 from ...topic.poll import tags as topic_poll
 from ...topic.private import tags as topic_private
 from ..tags import avatar
-from ..tags import gravatar
 from ..tags import messages
 from ..tags import paginator
 from ..tags import social_share
@@ -27,7 +26,6 @@ __all__ = [
     'topic_notification',
     'topic_private',
     'avatar',
-    'gravatar',
     'messages',
     'paginator',
     'social_share',

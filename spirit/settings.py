@@ -165,3 +165,10 @@ HAYSTACK_CONNECTIONS = {
         'PATH': os.path.join(os.path.dirname(__file__), 'search/whoosh_index'),
     },
 }
+
+
+# easy_thumbnails
+
+INSTALLED_APPS += [
+    'easy_thumbnails',
+]
