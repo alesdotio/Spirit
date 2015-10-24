@@ -8,7 +8,7 @@ from django.contrib.auth.forms import PasswordResetForm
 from django.core.urlresolvers import reverse_lazy
 
 from . import views
-from .forms import CustomPasswordResetForm
+from .forms import CustomPasswordResetForm, CustomSetPasswordForm
 
 urlpatterns = [
     url(r'^login/$', views.custom_login, {'template_name': 'spirit/user/auth/login.html'}, name='login'),
@@ -33,7 +33,8 @@ urlpatterns = [
     url(r'^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[\w\-]+)/$', django_views.password_reset_confirm,
         {
             'template_name': 'spirit/user/auth/password_reset_confirm.html',
-            'post_reset_redirect': reverse_lazy('spirit:user:auth:password-reset-complete')
+            'post_reset_redirect': reverse_lazy('spirit:user:auth:password-reset-complete'),
+            'set_password_form': CustomSetPasswordForm
         }, name='password-reset-confirm'),
     url(r'^reset/done/$', django_views.password_reset_complete,
         {'template_name': 'spirit/user/auth/password_reset_complete.html', },

@@ -114,6 +114,10 @@ class CustomPasswordResetForm(PasswordResetForm):
         email_message.send()
 
 
+class CustomSetPasswordForm(SetPasswordForm):
+    new_password1 = forms.CharField(label=_("New password"), widget=forms.PasswordInput, min_length=6)
+
+
 class ResendActivationForm(forms.Form):
 
     email = forms.CharField(label=_("Email"), widget=forms.EmailInput, max_length=254)
