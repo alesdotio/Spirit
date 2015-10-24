@@ -91,7 +91,7 @@ def email_change(request):
             messages.info(request, _("We have sent you an email so you can confirm the change!"))
             return redirect(reverse('spirit:user:update'))
     else:
-        form = EmailChangeForm()
+        form = EmailChangeForm(user=request.user)
 
     context = {'form': form, }
 

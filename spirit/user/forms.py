@@ -51,6 +51,8 @@ class EmailChangeForm(CleanEmailMixin, forms.Form):
     def __init__(self, user=None, *args, **kwargs):
         self.user = user
         super(EmailChangeForm, self).__init__(*args, **kwargs)
+        if not self.user.has_usable_password():
+            self.fields.pop('password')
 
     def clean_password(self):
         password = self.cleaned_data["password"]
