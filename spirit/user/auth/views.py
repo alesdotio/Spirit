@@ -53,17 +53,22 @@ def custom_password_reset(request, **kwargs):
 
 @ratelimit(rate=settings.ST_RATELIMIT_FOR_REGISTER)
 # TODO: @guest_only
-def register(request):
+def register(request, registration_form=RegistrationForm):
     if request.user.is_authenticated():
         return redirect(request.GET.get('next', reverse('spirit:user:update')))
 
     if request.method == 'POST':
-        form = RegistrationForm(data=request.POST)
+        form = registration_form(data=request.POST)
 
         if not request.is_limited and form.is_valid():
             user = form.save()
             send_activation_email(request, user)
-            messages.info(request, _("We have sent you an email so you can activate your account!"))
+            messages.info(
+                request,
+                _("We have sent you an email to %(email)s "
+                  "so you can activate your account!")
+                % {'email': form.get_email()}
+            )
 
             # TODO: email-less activation
             # if not settings.REGISTER_EMAIL_ACTIVATION_REQUIRED:
@@ -72,7 +77,7 @@ def register(request):
 
             return redirect(reverse('spirit:user:auth:login'))
     else:
-        form = RegistrationForm()
+        form = registration_form()
 
     context = {'form': form, }
 

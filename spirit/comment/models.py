@@ -12,8 +12,6 @@ from django.utils import timezone
 from .managers import CommentQuerySet
 
 
-COMMENT_MAX_LEN = 10000  # changing this needs migration
-
 COMMENT, MOVED, CLOSED, UNCLOSED, PINNED, UNPINNED = range(6)
 
 ACTION = (
@@ -28,7 +26,7 @@ ACTION = (
 
 class Comment(models.Model):
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name=_("user"))
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='st_comments')
     topic = models.ForeignKey('spirit_topic.Topic')
 
     comment = models.TextField(_("comment"))

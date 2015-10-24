@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
-from smtplib import SMTPException
 import logging
+from smtplib import SMTPException
 
-from django.core.mail import EmailMessage, EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives
 from django.contrib.sites.shortcuts import get_current_site
-from django.template import Context, Template
-from django.utils.encoding import force_unicode
+from django.template import Context
 from django.utils.translation import ugettext as _
 from django.template.loader import render_to_string
+from django.conf import settings
 
 from .tokens import UserActivationTokenGenerator, UserEmailChangeTokenGenerator
 
@@ -27,20 +27,14 @@ def sender(request, subject, template_name, context, to):
     html_context = Context({
         'content': message
     })
-    from_email = "{site_name} <{name}@{domain}>".format(name="noreply", domain=site.domain, site_name=site.name)
 
-    if len(to) > 1:
-        kwargs = {'bcc': to, }
-    else:
-        kwargs = {'to': to, }
-
-    email = EmailMultiAlternatives(subject, message, from_email, **kwargs)
-    email.attach_alternative(content=render_to_string("spirit/_base_email.html", html_context), mimetype="text/html")
-
-    try:
-        email.send()
-    except SMTPException as err:
-        logger.exception(err)
+    for recipient in to:
+        email = EmailMultiAlternatives(subject, message, from_email=settings.DEFAULT_FROM_EMAIL, to=[recipient])
+        email.attach_alternative(content=render_to_string("spirit/_base_email.html", html_context), mimetype="text/html")
+        try:
+            email.send()
+        except (SMTPException, OSError) as err:
+            logger.exception(err)
 
 
 def send_activation_email(request, user):

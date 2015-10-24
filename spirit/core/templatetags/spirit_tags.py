@@ -14,12 +14,14 @@ from ..tags import messages
 from ..tags import paginator
 from ..tags import social_share
 from ..tags import time
+from ..tags import urls
 from ..tags.registry import register
 
 
 __all__ = [
     'comment',
     'comment_like',
+    'comment_poll',
     'topic_poll',
     'search',
     'topic_favorite',
@@ -30,5 +32,6 @@ __all__ = [
     'paginator',
     'social_share',
     'time',
+    'urls',
     'register'
 ]

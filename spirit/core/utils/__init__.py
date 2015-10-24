@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 import os
 import json
+import hashlib
 from contextlib import contextmanager
 
 from django.template.loader import render_to_string
@@ -28,6 +29,16 @@ def mkdir_p(path):
             raise
 
 
+def get_hash(file):
+    # todo: test!
+    md5 = hashlib.md5()
+
+    for c in file.chunks():
+        md5.update(c)
+
+    return md5.hexdigest()
+
+
 @contextmanager
 def pushd(new_dir):
     """
@@ -45,3 +56,16 @@ def pushd(new_dir):
     os.chdir(new_dir)
     yield
     os.chdir(prev_dir)
+
+
+def get_query_string(request, **params):
+    """
+    Adds params to current query string
+    """
+    # todo: test!
+    query_dict = request.GET.copy()  # MultiValueDict
+
+    for k, v in sorted(params.items()):
+        query_dict[k] = v
+
+    return query_dict.urlencode()

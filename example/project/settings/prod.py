@@ -23,6 +23,9 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "")
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = ['.example.com', ]
 
+DEFAULT_FROM_EMAIL = 'MyForum <noreply@example.com>'
+SERVER_EMAIL = DEFAULT_FROM_EMAIL  # For error notifications
+
 # Extend the Spirit installed apps
 # Check out the .base.py file for more examples
 INSTALLED_APPS.extend([
@@ -49,10 +52,12 @@ LANGUAGES = [
     ('en', gettext_noop('English')),
     ('es', gettext_noop('Spanish')),
     ('fr', gettext_noop('French')),
+    ('hu', gettext_noop('Hungarian')),
     ('pl', gettext_noop('Polish')),
     ('pl-pl', gettext_noop('Poland Polish')),
     ('ru', gettext_noop('Russian')),
     ('sv', gettext_noop('Swedish')),
+    ('tr', gettext_noop('Turkish')),
     ('zh-hans', gettext_noop('Simplified Chinese')),
 ]
 

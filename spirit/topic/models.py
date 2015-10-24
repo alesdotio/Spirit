@@ -15,7 +15,7 @@ from ..core.utils.models import AutoSlugField
 
 class Topic(models.Model):
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name=_("user"))
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='st_topics')
     category = models.ForeignKey('spirit_category.Category', verbose_name=_("category"))
 
     title = models.CharField(_("title"), max_length=255)
@@ -60,6 +60,23 @@ class Topic(models.Model):
         except (AttributeError, IndexError):
             return
 
+    @property
+    def new_comments_count(self):
+        # This may not be accurate since bookmarks requires JS,
+        # without JS only the first comment in a page is marked,
+        # so this counter should be shown running a JS script
+        # todo: test!
+        if not self.bookmark:
+            return 0
+
+        # Comments may have been moved
+        return max(0, self.comment_count - self.bookmarks[0].comment_number)
+
+    @property
+    def has_new_comments(self):
+        # todo: test!
+        return self.new_comments_count > 0
+
     def increase_view_count(self):
         Topic.objects\
             .filter(pk=self.pk)\
@@ -82,3 +99,4 @@ class Topic(models.Model):
         if self.category.restrict_comment.exists():
             setattr(self, 'can_comment', self.category.restrict_comment.through.objects.filter(
                 category_id=self.category_id, group_id__in=group_ids).exists())
+

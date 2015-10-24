@@ -16,7 +16,7 @@ class CategoryForm(forms.ModelForm):
 
     class Meta:
         model = Category
-        fields = ("parent", "title", "description", "order", "is_closed", "is_removed",
+        fields = ("parent", "title", "description", "order", "is_global", "is_closed", "is_removed",
                   "enable_restrict_access", "restrict_access",
                   "enable_restrict_topic", "restrict_topic",
                   "enable_restrict_comment", "restrict_comment")

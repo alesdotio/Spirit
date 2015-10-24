@@ -11,16 +11,16 @@ from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 
-from ..forms import EmailUniqueMixin
+from ..forms import CleanEmailMixin
 
 User = get_user_model()
 
 
-class RegistrationForm(EmailUniqueMixin, UserCreationForm):
+class RegistrationForm(CleanEmailMixin, UserCreationForm):
     email = forms.EmailField(label=_("Email"), widget=forms.EmailInput,
         help_text=_("To activate your account you will have to click the link we will send to this address."))
     password1 = forms.CharField(label=_("Password"), widget=forms.PasswordInput, min_length=6,
-        help_text=_("Please use a strong password, 6 characters or more."))
+        help_text=_("Please use a strong password: at least 6 characters long."))
     honeypot = forms.CharField(label=_("Leave blank"), required=False)
 
     class Meta:
@@ -42,8 +42,11 @@ class RegistrationForm(EmailUniqueMixin, UserCreationForm):
         if username.lower() in settings.ST_INVALID_USERNAMES:
             raise forms.ValidationError(_("The username is invalid."))
 
-        is_taken = User._default_manager\
-            .filter(username__iexact=username)\
+        if settings.ST_CASE_INSENSITIVE_EMAILS:
+            username = username.lower()
+
+        is_taken = User.objects\
+            .filter(username=username)\
             .exists()
 
         if is_taken:
@@ -100,29 +103,27 @@ class CustomPasswordResetForm(PasswordResetForm):
 
 class ResendActivationForm(forms.Form):
 
-    email = forms.CharField(label=_("Email"), widget=forms.EmailInput)
+    email = forms.CharField(label=_("Email"), widget=forms.EmailInput, max_length=254)
 
     def clean_email(self):
         email = self.cleaned_data["email"]
 
-        try:
-            self.user = User.objects.get(email=email)
-        except User.DoesNotExist:
+        if settings.ST_CASE_INSENSITIVE_EMAILS:
+            email = email.lower()
+
+        is_existent = User.objects\
+            .filter(email=email)\
+            .exists()
+
+        if not is_existent:
             raise forms.ValidationError(_("The provided email does not exists."))
-        except User.MultipleObjectsReturned:
-            # TODO: refactor!
-            users = User.objects\
-                .filter(email=email, st__is_verified=False)\
-                .order_by('-pk')
 
-            users = users[:1]  # Limit to the first found.
+        self.user = User.objects\
+            .filter(email=email, st__is_verified=False)\
+            .order_by('-pk')\
+            .first()
 
-            if not len(users):
-                raise forms.ValidationError(_("This account is verified, try logging-in."))
-
-            self.user = users[0]
-
-        if self.user.st.is_verified:
+        if not self.user:
             raise forms.ValidationError(_("This account is verified, try logging-in."))
 
         return email
