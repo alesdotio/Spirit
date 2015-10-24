@@ -13,7 +13,7 @@ class EmailAuthBackend(ModelBackend):
 
     def authenticate(self, username=None, password=None, **kwargs):
         # TODO: authenticate when multiple users are returned
-        if settings.ST_CASE_INSENSITIVE_EMAILS:
+        if username and settings.ST_CASE_INSENSITIVE_EMAILS:
             username = username.lower()
 
         try:
