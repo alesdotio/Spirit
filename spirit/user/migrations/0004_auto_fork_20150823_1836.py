@@ -8,7 +8,7 @@ import spirit.user.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('spirit_user', '0005_userprofile_title'),
+        ('spirit_user', '0004_auto_fork_20150823_1248'),
     ]
 
     operations = [
