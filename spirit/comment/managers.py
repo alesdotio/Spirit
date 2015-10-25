@@ -36,7 +36,9 @@ class CommentQuerySet(models.QuerySet):
         return self.unremoved().public().can_access(user)
 
     def can_access(self, user=None):
-        if user:
+        if user and user.is_authenticated():
+            if getattr(user, 'st', None) and user.st.is_administrator:
+                return self.all()
             groups = user.groups.all()
         else:
             groups = Group.objects.none()
