@@ -45,19 +45,19 @@ class CommentQuerySet(models.QuerySet):
         return self.filter(
             Q(topic__category__restrict_access=None) |
             Q(topic__category__restrict_access__contains=groups)
-        )
+        ).distinct()
 
     def can_topic(self, user):
         return self.filter(
             Q(topic__category__restrict_topic=None) |
             Q(topic__category__restrict_topic__contains=user.groups.all())
-        )
+        ).distinct()
 
     def can_comment(self, user):
         return self.filter(
             Q(topic__category__restrict_comment=None) |
             Q(topic__category__restrict_comment__contains=user.groups.all())
-        )
+        ).distinct()
 
     def for_topic(self, topic):
         return self.filter(topic=topic)

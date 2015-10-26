@@ -29,19 +29,19 @@ class CategoryQuerySet(models.QuerySet):
         return self.filter(
             Q(restrict_access=None) |
             Q(restrict_access__contains=groups)
-        )
+        ).distinct()
 
     def can_topic(self, user):
         return self.filter(
             Q(restrict_topic=None) |
             Q(restrict_topic__contains=user.groups.all())
-        )
+        ).distinct()
 
     def can_comment(self, user):
         return self.filter(
             Q(restrict_comment=None) |
             Q(restrict_comment__contains=user.groups.all())
-        )
+        ).distinct()
 
     def opened(self):
         return self.filter(Q(parent=None) | Q(parent__is_closed=False),

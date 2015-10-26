@@ -33,19 +33,19 @@ class TopicQuerySet(models.QuerySet):
         return self.filter(
             Q(category__restrict_access=None) |
             Q(category__restrict_access__contains=groups)
-        )
+        ).distinct()
 
     def can_topic(self, user):
         return self.filter(
             Q(category__restrict_topic=None) |
             Q(category__restrict_topic__contains=user.groups.all())
-        )
+        ).distinct()
 
     def can_comment(self, user):
         return self.filter(
             Q(category__restrict_comment=None) |
             Q(category__restrict_comment__contains=user.groups.all())
-        )
+        ).distinct()
 
     def opened(self):
         return self.filter(is_closed=False)
