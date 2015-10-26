@@ -24,7 +24,7 @@ from .utils import comment_posted, post_comment_update, pre_comment_update
 @ratelimit(rate=settings.ST_RATELIMIT_FOR_PUBLISH)
 def publish(request, topic_id, pk=None):
     topic = get_object_or_404(
-        Topic.objects.opened().for_access(request.user),
+        Topic.objects.opened().unremoved()._access(user=request.user).can_comment(user=request.user),
         pk=topic_id
     )
 
@@ -108,7 +108,7 @@ def move(request, topic_id):
 
 
 def find(request, pk):
-    comment = get_object_or_404(Comment, pk=pk)
+    comment = get_object_or_404(Comment.objects.can_access(request.user), pk=pk)
     comment_number = Comment.objects.filter(topic=comment.topic, date__lte=comment.date).count()
     url = paginator.get_url(comment.topic.get_absolute_url(),
                             comment_number,
