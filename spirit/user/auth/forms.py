@@ -43,11 +43,9 @@ class RegistrationForm(CleanEmailMixin, UserCreationForm):
             raise forms.ValidationError(_("The username is invalid."))
 
         if settings.ST_CASE_INSENSITIVE_EMAILS:
-            username = username.lower()
-
-        is_taken = User.objects\
-            .filter(username=username)\
-            .exists()
+            is_taken = User.objects.filter(username__iexact=username).exists()
+        else:
+            is_taken = User.objects.filter(username__exact=username).exists()
 
         if is_taken:
             raise forms.ValidationError(_("The username is taken."))
@@ -57,12 +55,14 @@ class RegistrationForm(CleanEmailMixin, UserCreationForm):
     def clean_email(self):
         email = self.cleaned_data["email"]
 
-        is_taken = User._default_manager\
-            .filter(email__iexact=email)\
-            .exists()
+        if settings.ST_UNIQUE_EMAILS:
+            if settings.ST_CASE_INSENSITIVE_EMAILS:
+                is_taken = User._default_manager.filter(email__iexact=email).exists()
+            else:
+                is_taken = User._default_manager.filter(email__exact=email).exists()
 
-        if is_taken:
-            raise forms.ValidationError(_("A user with this email already exists."))
+            if is_taken:
+                raise forms.ValidationError(_("A user with this email already exists."))
 
         return email
 
