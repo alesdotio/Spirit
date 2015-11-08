@@ -25,7 +25,7 @@ class TopicQuerySet(models.QuerySet):
 
     def can_access(self, user=None):
         if user and user.is_authenticated():
-            if getattr(user, 'st', None) and user.st.is_administrator:
+            if getattr(user, 'st', None) and (user.st.is_administrator or user.st.is_moderator):
                 return self.all()
             groups = user.groups.all()
         else:
@@ -36,15 +36,27 @@ class TopicQuerySet(models.QuerySet):
         ).distinct()
 
     def can_topic(self, user):
-        return self.filter(
+        if user and user.is_authenticated():
+            if getattr(user, 'st', None) and (user.st.is_administrator or user.st.is_moderator):
+                return self.all()
+            groups = user.groups.all()
+        else:
+            groups = Group.objects.none()
+        return self.can_access(user).filter(
             Q(category__restrict_topic=None) |
-            Q(category__restrict_topic__contains=user.groups.all())
+            Q(category__restrict_topic__contains=groups)
         ).distinct()
 
     def can_comment(self, user):
-        return self.filter(
+        if user and user.is_authenticated():
+            if getattr(user, 'st', None) and (user.st.is_administrator or user.st.is_moderator):
+                return self.all()
+            groups = user.groups.all()
+        else:
+            groups = Group.objects.none()
+        return self.can_access(user).filter(
             Q(category__restrict_comment=None) |
-            Q(category__restrict_comment__contains=user.groups.all())
+            Q(category__restrict_comment__contains=groups)
         ).distinct()
 
     def opened(self):
@@ -63,7 +75,7 @@ class TopicQuerySet(models.QuerySet):
         return self.filter(Q(category__is_private=False) | Q(topics_private__user=user))
 
     def for_access(self, user):
-        return self.unremoved()._access(user=user).can_topic(user)
+        return self.unremoved()._access(user=user).can_access(user)
 
     def for_unread(self, user):
         return self.filter(topicunread__user=user,

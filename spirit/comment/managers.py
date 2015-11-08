@@ -37,7 +37,7 @@ class CommentQuerySet(models.QuerySet):
 
     def can_access(self, user=None):
         if user and user.is_authenticated():
-            if getattr(user, 'st', None) and user.st.is_administrator:
+            if getattr(user, 'st', None) and (user.st.is_administrator or user.st.is_moderator):
                 return self.all()
             groups = user.groups.all()
         else:
@@ -47,16 +47,16 @@ class CommentQuerySet(models.QuerySet):
             Q(topic__category__restrict_access__contains=groups)
         ).distinct()
 
-    def can_topic(self, user):
-        return self.filter(
-            Q(topic__category__restrict_topic=None) |
-            Q(topic__category__restrict_topic__contains=user.groups.all())
-        ).distinct()
-
     def can_comment(self, user):
-        return self.filter(
+        if user and user.is_authenticated():
+            if getattr(user, 'st', None) and (user.st.is_administrator or user.st.is_moderator):
+                return self.all()
+            groups = user.groups.all()
+        else:
+            groups = Group.objects.none()
+        return self.can_access(user).filter(
             Q(topic__category__restrict_comment=None) |
-            Q(topic__category__restrict_comment__contains=user.groups.all())
+            Q(topic__category__restrict_comment__contains=groups)
         ).distinct()
 
     def for_topic(self, topic):

@@ -21,7 +21,7 @@ class CategoryQuerySet(models.QuerySet):
 
     def can_access(self, user=None):
         if user and user.is_authenticated():
-            if getattr(user, 'st', None) and user.st.is_administrator:
+            if getattr(user, 'st', None) and (user.st.is_administrator or user.st.is_moderator):
                 return self.all()
             groups = user.groups.all()
         else:
@@ -32,15 +32,27 @@ class CategoryQuerySet(models.QuerySet):
         ).distinct()
 
     def can_topic(self, user):
-        return self.filter(
+        if user and user.is_authenticated():
+            if getattr(user, 'st', None) and (user.st.is_administrator or user.st.is_moderator):
+                return self.all()
+            groups = user.groups.all()
+        else:
+            groups = Group.objects.none()
+        return self.can_access(user).filter(
             Q(restrict_topic=None) |
-            Q(restrict_topic__contains=user.groups.all())
+            Q(restrict_topic__contains=groups)
         ).distinct()
 
     def can_comment(self, user):
-        return self.filter(
+        if user and user.is_authenticated():
+            if getattr(user, 'st', None) and (user.st.is_administrator or user.st.is_moderator):
+                return self.all()
+            groups = user.groups.all()
+        else:
+            groups = Group.objects.none()
+        return self.can_access(user).filter(
             Q(restrict_comment=None) |
-            Q(restrict_comment__contains=user.groups.all())
+            Q(restrict_comment__contains=groups)
         ).distinct()
 
     def opened(self):
