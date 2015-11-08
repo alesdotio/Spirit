@@ -1,3 +1,21 @@
+# Spirit (alesdotio fork)
+
+Custom changes from nitely/Spirit:
+
+* Added ability to restrict access, topic creation or comment creation per Category
+* User groups
+* Unlimited comment length
+* User email is now required on registration
+* Saner password policy
+* User titles
+* Added option to upload a file avatar or use a different source (social login)
+* Search in comments content
+* Configurable ratelimit
+* HTML Emails
+* Simple but functional Django admin
+* Improved compatibility with python-social (social login)
+
+
 # Spirit
 
 [![Build Status](https://img.shields.io/travis/nitely/Spirit.svg?style=flat-square)](https://travis-ci.org/nitely/Spirit)
