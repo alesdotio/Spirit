@@ -15,12 +15,9 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'vendors/jquery.min.js',
-      'vendors/**/*.js',
+      'all.min.js',
       'test/jasmine-jquery.js',
       'test/suites/*-spec.js',
-      '*.js',
-
 
       {
         pattern: 'test/fixtures/*.html',

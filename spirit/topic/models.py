@@ -47,6 +47,15 @@ class Topic(models.Model):
         else:
             return reverse('spirit:topic:detail', kwargs={'pk': str(self.id), 'slug': self.slug})
 
+    def get_bookmark_url(self):
+        if not self.is_visited:
+            return self.get_absolute_url()
+
+        if not self.has_new_comments:
+            return self.bookmark.get_absolute_url()
+
+        return self.bookmark.get_new_comment_url()
+
     @property
     def main_category(self):
         return self.category.parent or self.category
@@ -65,7 +74,6 @@ class Topic(models.Model):
         # This may not be accurate since bookmarks requires JS,
         # without JS only the first comment in a page is marked,
         # so this counter should be shown running a JS script
-        # todo: test!
         if not self.bookmark:
             return 0
 
@@ -74,8 +82,11 @@ class Topic(models.Model):
 
     @property
     def has_new_comments(self):
-        # todo: test!
         return self.new_comments_count > 0
+
+    @property
+    def is_visited(self):
+        return bool(self.bookmark)
 
     def increase_view_count(self):
         Topic.objects\

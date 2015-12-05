@@ -3,21 +3,24 @@
 from __future__ import unicode_literals
 import re
 import copy
-import os
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.staticfiles.storage import staticfiles_storage
 
 import mistune
 
 from .utils.emoji import emojis
 
 User = get_user_model()
+_linebreak = re.compile(r'^ *\n(?!\s*$)')
+_text = re.compile(
+    r'^[\s\S]+?(?=[\\<!\[_*`:@~]|https?://| *\n|$)'
+)
 
 
 class InlineGrammar(mistune.InlineGrammar):
 
+    # todo: match unicode emojis
     emoji = re.compile(
         r'^:(?P<emoji>[A-Za-z0-9_\-\+]+?):'
     )
@@ -30,21 +33,19 @@ class InlineGrammar(mistune.InlineGrammar):
     # Override
     def hard_wrap(self):
         # Adds ":" and "@" as an invalid text character, so we can match emojis and mentions.
-        self.linebreak = re.compile(r'^ *\n(?!\s*$)')
-        self.text = re.compile(
-            r'^[\s\S]+?(?=[\\<!\[_*`:@~]|https?://| *\n|$)'
-        )
+        self.linebreak = _linebreak
+        self.text = _text
 
 
 class InlineLexer(mistune.InlineLexer):
 
-    default_features = copy.copy(mistune.InlineLexer.default_features)
-    default_features.insert(0, 'emoji')
-    default_features.insert(0, 'mention')
+    default_rules = copy.copy(mistune.InlineLexer.inline_html_rules)
+    default_rules.insert(2, 'emoji')
+    default_rules.insert(2, 'mention')
 
     def __init__(self, renderer, rules=None, **kwargs):
-        if rules is None:
-            rules = InlineGrammar()
+        rules = InlineGrammar()
+        rules.hard_wrap()
 
         super(InlineLexer, self).__init__(renderer, rules, **kwargs)
 
@@ -57,11 +58,9 @@ class InlineLexer(mistune.InlineLexer):
         if emoji not in emojis:
             return m.group(0)
 
-        image = emoji + '.png'
-        rel_path = os.path.join('spirit', 'emojis', image).replace('\\', '/')
-        path = staticfiles_storage.url(rel_path)
-
-        return self.renderer.emoji(path)
+        name_raw = emoji
+        name_class = emoji.replace('_', '-').replace('+', 'plus')
+        return self.renderer.emoji(name_class=name_class, name_raw=name_raw)
 
     def output_mention(self, m):
         username = m.group('username')

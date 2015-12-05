@@ -23,7 +23,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "")
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = ['.example.com', ]
 
-DEFAULT_FROM_EMAIL = 'MyForum <noreply@example.com>'
+DEFAULT_FROM_EMAIL = 'webmaster@localhost'  # 'MyForum <noreply@example.com>'
 SERVER_EMAIL = DEFAULT_FROM_EMAIL  # For error notifications
 
 # Extend the Spirit installed apps
@@ -72,3 +72,6 @@ TEMPLATES[0]['OPTIONS']['loaders'] = [
         'django.template.loaders.app_directories.Loader',
     )),
 ]
+
+# Append the MD5 hash of the file’s content to the filename
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'

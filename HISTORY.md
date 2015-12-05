@@ -1,8 +1,29 @@
+0.4.5
+==================
+
+* Adds Python 3.5 support
+* New: Comment history diff (inserted & deleted lines)
+* New: Twitter emojis pack
+* New (Dev): Gulp tasks `npm run gulp css` and `npm run gulp coffee` for building assets
+* Improvement: Adds `rel="nofollow"` to all comment links of regular users
+* Improvement: CSS & JS minification and concatenation
+* Improvement: Added `STATICFILES_STORAGE = 'ManifestStaticFilesStorage'` (settings.prod only) to
+append hashes to assets file names
+* Improvement: `woff2` font support
+* Fix: Email required on registration
+* Fix: Changed `DEFAULT_FROM_EMAIL` default to `webmaster@localhost` (Django's default)
+* Fix: Redirect to first unread comment on visited topics
+* Fix: Adds missing `apps.AppConfig` in `spirit.search` to avoid app label clashes.
+
 0.4.4
 ==================
 
 * New: mark topic as visited (grey out the link) when it has a bookmark
 * New: mark topic as *has new comments* (red out comment icon) when it has new comments
+* Fix: send emails as `DEFAULT_FROM_EMAIL` (default to `site.name <noreply@[site.domain]>`),
+setting this will be mandatory in future releases (default will be removed).
+* Fix: Implement missing `apps.AppConfig` in `spirit.core` to avoid app label clashes.
+* Fix: Show category names in the advance search template.
 
 0.4.3
 ==================
@@ -12,7 +33,6 @@
 * New: Case insensitive emails (setting.ST_CASE_INSENSITIVE_EMAILS)
 * New & updated translations: Turkish (thanks to negativefix), Hungarian (thanks to istvanf),
 Polish, Polish (Poland), Spanish, German, Chinese, Swedish and Russian
-
 
 0.4.2
 ==================

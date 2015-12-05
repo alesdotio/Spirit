@@ -6,7 +6,6 @@ from django.core.cache import cache
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils import translation
-from django.conf import settings
 from django.utils import timezone
 
 from ..tests import utils as test_utils
@@ -24,16 +23,23 @@ class UtilsMarkdownTests(TestCase):
         self.user2 = test_utils.create_user(username="esteban")
         self.user3 = test_utils.create_user(username="áéíóú")
 
+    def test_markdown_escape(self):
+        """
+        Should escape html
+        """
+        comment = "<span>foo</span>"
+        comment_md = Markdown().render(comment)
+        self.assertEqual(comment_md, '<p>&lt;span&gt;foo&lt;/span&gt;</p>')
+
     def test_markdown_mentions(self):
         """
         markdown mentions
         """
         comment = "@nitely, @esteban,@áéíóú, @fakeone"
-        md = Markdown(escape=True, hard_wrap=True)
-        comment_md = md.render(comment)
-        self.assertEqual(comment_md, '<p><a class="comment-mention" href="%s">@nitely</a>, '
-                                     '<a class="comment-mention" href="%s">@esteban</a>,'
-                                     '<a class="comment-mention" href="%s">@\xe1\xe9\xed\xf3\xfa</a>, '
+        comment_md = Markdown().render(comment)
+        self.assertEqual(comment_md, '<p><a class="comment-mention" rel="nofollow" href="%s">@nitely</a>, '
+                                     '<a class="comment-mention" rel="nofollow" href="%s">@esteban</a>,'
+                                     '<a class="comment-mention" rel="nofollow" href="%s">@áéíóú</a>, '
                                      '@fakeone</p>' %
                                      (self.user.st.get_absolute_url(),
                                       self.user2.st.get_absolute_url(),
@@ -45,8 +51,7 @@ class UtilsMarkdownTests(TestCase):
         markdown mentions limit
         """
         comment = "@a, @b, @nitely"
-        md = Markdown(escape=True, hard_wrap=True)
-        comment_md = md.render(comment)
+        comment_md = Markdown().render(comment)
         self.assertEqual(comment_md, "<p>@a, @b, @nitely</p>")
 
     def test_markdown_mentions_dict(self):
@@ -54,7 +59,7 @@ class UtilsMarkdownTests(TestCase):
         markdown mentions dict
         """
         comment = "@nitely, @esteban"
-        md = Markdown(escape=True, hard_wrap=True)
+        md = Markdown()
         md.render(comment)
         # mentions get dynamically added on MentionifyExtension
         self.assertDictEqual(md.get_mentions(), {'nitely': self.user,
@@ -64,12 +69,12 @@ class UtilsMarkdownTests(TestCase):
         """
         markdown emojify
         """
-        comment = ":airplane:, :8ball: :bademoji: foo:"
-        md = Markdown(escape=True, hard_wrap=True)
-        comment_md = md.render(comment)
-        self.assertEqual(comment_md, '<p><img class="comment-emoji" src="%(static)sspirit/emojis/airplane.png">, '
-                                     '<img class="comment-emoji" src="%(static)sspirit/emojis/8ball.png"> '
-                                     ':bademoji: foo:</p>' % {'static': settings.STATIC_URL, })
+        comment = ":airplane:, :8ball: :+1: :bademoji: foo:"
+        comment_md = Markdown().render(comment)
+        self.assertEqual(comment_md, '<p><i class="tw tw-airplane" title=":airplane:"></i>, '
+                                     '<i class="tw tw-8ball" title=":8ball:"></i> '
+                                     '<i class="tw tw-plus1" title=":+1:"></i> '
+                                     ':bademoji: foo:</p>')
 
     @override_settings(LANGUAGE_CODE='en')
     def test_markdown_quote(self):
@@ -114,94 +119,151 @@ class UtilsMarkdownTests(TestCase):
         """
         markdown image
         """
-        comment = "http://foo.bar/image.png\nhttp://www.foo.bar.fb/path/image.png\n" \
-                  "https://foo.bar/image.png\n" \
-                  "bad http://foo.bar/image.png\nhttp://foo.bar/image.png bad\nhttp://bad.png\n" \
-                  "http://foo.bar/.png\n![im](http://foo.bar/not_imagified.png)\n" \
-                  "foo.bar/bad.png\n\nhttp://foo.bar/<escaped>.png"
-        md = Markdown(escape=True, hard_wrap=True)
-        comment_md = md.render(comment)
-        self.assertListEqual(comment_md.splitlines(), '<p><img src="http://foo.bar/image.png" alt="image" title="image"></p>\n'
-                             '<p><img src="http://www.foo.bar.fb/path/image.png" alt="image" title="image"></p>\n'
-                             '<p><img src="https://foo.bar/image.png" alt="image" title="image"></p>\n'
-                             '<p>bad <a href="http://foo.bar/image.png">http://foo.bar/image.png</a><br>'  # autolink
-                             '<a href="http://foo.bar/image.png">http://foo.bar/image.png</a> bad<br>'  # autolink
-                             '<a href="http://bad.png">http://bad.png</a><br>'  # autolink
-                             '<a href="http://foo.bar/.png">http://foo.bar/.png</a><br>'  # autolink
-                             '<img src="http://foo.bar/not_imagified.png" alt="im"><br>'
-                             'foo.bar/bad.png</p>\n'
-                             '<p><img src="http://foo.bar/&lt;escaped&gt;.png" alt="&lt;escaped&gt;" title="&lt;escaped&gt;"></p>\n'.splitlines())
+        comment = (
+            "http://foo.bar/image.png\n"
+            "http://www.foo.bar.fb/path/image.png\n"
+            "https://foo.bar/image.png\n"
+            "bad http://foo.bar/image.png\n"
+            "http://foo.bar/image.png bad\nhttp://bad.png\n"
+            "http://foo.bar/.png\n"
+            "![im](http://foo.bar/not_imagified.png)\n"
+            "foo.bar/bad.png\n\n"
+            "http://foo.bar/<escaped>.png"
+        )
+        comment_md = Markdown().render(comment)
+        self.assertListEqual(
+            comment_md.splitlines(),
+            [
+                '<p><img src="http://foo.bar/image.png" alt="image" title="image"></p>',
+                '<p><img src="http://www.foo.bar.fb/path/image.png" alt="image" title="image"></p>',
+                '<p><img src="https://foo.bar/image.png" alt="image" title="image"></p>',
+
+                # auto-link
+                '<p>bad <a rel="nofollow" href="http://foo.bar/image.png">http://foo.bar/image.png</a><br>',
+                '<a rel="nofollow" href="http://foo.bar/image.png">http://foo.bar/image.png</a> bad<br>',
+                '<a rel="nofollow" href="http://bad.png">http://bad.png</a><br>',
+                '<a rel="nofollow" href="http://foo.bar/.png">http://foo.bar/.png</a><br>',
+                '<img src="http://foo.bar/not_imagified.png" alt="im"><br>',
+                'foo.bar/bad.png</p>',
+
+                '<p><img src="http://foo.bar/&lt;escaped&gt;.png" alt="&lt;escaped&gt;" title="&lt;escaped&gt;"></p>'
+            ]
+        )
 
     def test_markdown_youtube(self):
         """
         markdown youtube
         """
-        comment = "https://www.youtube.com/watch?v=Z0UISCEe52Y\n" \
-                  "http://youtu.be/afyK1HSFfgw\n" \
-                  "https://www.youtube.com/embed/vsF0K3Ou1v0\n" \
-                  "https://www.youtube.com/watch?v=<bad>\n" \
-                  "https://www.noyoutube.com/watch?v=Z0UISCEe52Y\n" \
-                  "badbad https://www.youtube.com/watch?v=Z0UISCEe52Y\n" \
-                  "https://www.youtube.com/watch?v=Z0UISCEe52Y badbad\n"
-        md = Markdown(escape=True, hard_wrap=True)
-        comment_md = md.render(comment)
-        self.assertListEqual(comment_md.splitlines(), '<span class="video"><iframe src="https://www.youtube.com/embed/Z0UISCEe52Y?feature=oembed" allowfullscreen></iframe></span>'
-                             '\n<span class="video"><iframe src="https://www.youtube.com/embed/afyK1HSFfgw?feature=oembed" allowfullscreen></iframe></span>'
-                             '\n<span class="video"><iframe src="https://www.youtube.com/embed/vsF0K3Ou1v0?feature=oembed" allowfullscreen></iframe></span>'
-                             '\n<p><a href="https://www.youtube.com/watch?v=&lt;bad&amp;gt">https://www.youtube.com/watch?v=&lt;bad&amp;gt</a>;<br>'  # smart_amp ain't smart
-                             '<a href="https://www.noyoutube.com/watch?v=Z0UISCEe52Y">https://www.noyoutube.com/watch?v=Z0UISCEe52Y</a><br>'
-                             'badbad <a href="https://www.youtube.com/watch?v=Z0UISCEe52Y">https://www.youtube.com/watch?v=Z0UISCEe52Y</a><br>'
-                             '<a href="https://www.youtube.com/watch?v=Z0UISCEe52Y">https://www.youtube.com/watch?v=Z0UISCEe52Y</a> badbad</p>'.splitlines())
+        comment = (
+            "https://www.youtube.com/watch?v=Z0UISCEe52Y\n"
+            "http://youtu.be/afyK1HSFfgw\n"
+            "https://www.youtube.com/embed/vsF0K3Ou1v0\n"
+            "https://www.youtube.com/watch?v=<bad>\n"
+            "https://www.noyoutube.com/watch?v=Z0UISCEe52Y\n"
+            "badbad https://www.youtube.com/watch?v=Z0UISCEe52Y\n"
+            "https://www.youtube.com/watch?v=Z0UISCEe52Y badbad\n"
+        )
+        comment_md = Markdown().render(comment)
+        self.assertListEqual(
+            comment_md.splitlines(),
+            [
+                '<span class="video"><iframe src="https://www.youtube.com/embed/Z0UISCEe52Y?feature=oembed" '
+                'allowfullscreen></iframe></span>',
+                '<span class="video"><iframe src="https://www.youtube.com/embed/afyK1HSFfgw?feature=oembed"'
+                ' allowfullscreen></iframe></span>',
+                '<span class="video"><iframe src="https://www.youtube.com/embed/vsF0K3Ou1v0?feature=oembed"'
+                ' allowfullscreen></iframe></span>',
+                '<p><a rel="nofollow" href="https://www.youtube.com/watch?v=">'
+                'https://www.youtube.com/watch?v=</a>&lt;bad&gt;<br>',  # smart_amp ain't smart
+                '<a rel="nofollow" href="https://www.noyoutube.com/watch?v=Z0UISCEe52Y">'
+                'https://www.noyoutube.com/watch?v=Z0UISCEe52Y</a><br>',
+                'badbad <a rel="nofollow" href="https://www.youtube.com/watch?v=Z0UISCEe52Y">'
+                'https://www.youtube.com/watch?v=Z0UISCEe52Y</a><br>',
+                '<a rel="nofollow" href="https://www.youtube.com/watch?v=Z0UISCEe52Y">'
+                'https://www.youtube.com/watch?v=Z0UISCEe52Y</a> badbad</p>'
+            ]
+        )
 
     def test_markdown_vimeo(self):
         """
         markdown vimeo
         """
-        comment = "https://vimeo.com/11111111\n" \
-                  "https://www.vimeo.com/11111111\n" \
-                  "https://player.vimeo.com/video/11111111\n" \
-                  "https://vimeo.com/channels/11111111\n" \
-                  "https://vimeo.com/groups/name/videos/11111111\n" \
-                  "https://vimeo.com/album/2222222/video/11111111\n" \
-                  "https://vimeo.com/11111111?param=value\n" \
-                  "https://novimeo.com/11111111\n" \
-                  "bad https://novimeo.com/11111111\n" \
-                  "https://novimeo.com/11111111 bad"
-        md = Markdown(escape=True, hard_wrap=True)
-        comment_md = md.render(comment)
-        self.assertListEqual(comment_md.splitlines(), '<span class="video"><iframe src="https://player.vimeo.com/video/11111111" allowfullscreen></iframe></span>'
-                             '\n<span class="video"><iframe src="https://player.vimeo.com/video/11111111" allowfullscreen></iframe></span>'
-                             '\n<span class="video"><iframe src="https://player.vimeo.com/video/11111111" allowfullscreen></iframe></span>'
-                             '\n<span class="video"><iframe src="https://player.vimeo.com/video/11111111" allowfullscreen></iframe></span>'
-                             '\n<span class="video"><iframe src="https://player.vimeo.com/video/11111111" allowfullscreen></iframe></span>'
-                             '\n<span class="video"><iframe src="https://player.vimeo.com/video/11111111" allowfullscreen></iframe></span>'
-                             '\n<span class="video"><iframe src="https://player.vimeo.com/video/11111111" allowfullscreen></iframe></span>'
-                             '\n<p><a href="https://novimeo.com/11111111">https://novimeo.com/11111111</a><br>'
-                             'bad <a href="https://novimeo.com/11111111">https://novimeo.com/11111111</a><br>'
-                             '<a href="https://novimeo.com/11111111">https://novimeo.com/11111111</a> bad</p>'.splitlines())
+        comment = (
+            "https://vimeo.com/11111111\n"
+            "https://www.vimeo.com/11111111\n"
+            "https://player.vimeo.com/video/11111111\n"
+            "https://vimeo.com/channels/11111111\n"
+            "https://vimeo.com/groups/name/videos/11111111\n"
+            "https://vimeo.com/album/2222222/video/11111111\n"
+            "https://vimeo.com/11111111?param=value\n"
+            "https://novimeo.com/11111111\n"
+            "bad https://novimeo.com/11111111\n"
+            "https://novimeo.com/11111111 bad"
+        )
+        comment_md = Markdown().render(comment)
+        self.assertListEqual(
+            comment_md.splitlines(),
+            [
+                '<span class="video"><iframe src="https://player.vimeo.com/video/11111111" '
+                'allowfullscreen></iframe></span>',
+                '<span class="video"><iframe src="https://player.vimeo.com/video/11111111" '
+                'allowfullscreen></iframe></span>',
+                '<span class="video"><iframe src="https://player.vimeo.com/video/11111111" '
+                'allowfullscreen></iframe></span>',
+                '<span class="video"><iframe src="https://player.vimeo.com/video/11111111" '
+                'allowfullscreen></iframe></span>',
+                '<span class="video"><iframe src="https://player.vimeo.com/video/11111111" '
+                'allowfullscreen></iframe></span>',
+                '<span class="video"><iframe src="https://player.vimeo.com/video/11111111" '
+                'allowfullscreen></iframe></span>',
+                '<span class="video"><iframe src="https://player.vimeo.com/video/11111111" '
+                'allowfullscreen></iframe></span>',
+
+                '<p><a rel="nofollow" href="https://novimeo.com/11111111">https://novimeo.com/11111111</a><br>',
+                'bad <a rel="nofollow" href="https://novimeo.com/11111111">https://novimeo.com/11111111</a><br>',
+                '<a rel="nofollow" href="https://novimeo.com/11111111">https://novimeo.com/11111111</a> bad</p>'
+            ]
+        )
 
     def test_markdown_video(self):
         """
         markdown video
         """
-        comment = "http://foo.bar/video.mp4\nhttp://foo.bar/<escaped>.mp4"
-        md = Markdown(escape=True, hard_wrap=True)
-        comment_md = md.render(comment)
-        self.assertListEqual(comment_md.splitlines(), '<video controls><source src="http://foo.bar/video.mp4">'
-                                                      '<a href="http://foo.bar/video.mp4">http://foo.bar/video.mp4</a></video>'
-                                                      '\n<video controls><source src="http://foo.bar/&lt;escaped&gt;.mp4">'
-                                                      '<a href="http://foo.bar/&lt;escaped&gt;.mp4">'
-                                                      'http://foo.bar/&lt;escaped&gt;.mp4</a></video>'.splitlines())
+        comment = (
+            "http://foo.bar/video.mp4\n"
+            "http://foo.bar/<escaped>.mp4"
+        )
+        comment_md = Markdown().render(comment)
+        self.assertListEqual(
+            comment_md.splitlines(),
+            [
+                '<video controls><source src="http://foo.bar/video.mp4">'
+                '<a rel="nofollow" href="http://foo.bar/video.mp4">http://foo.bar/video.mp4</a></video>',
+                '<video controls><source src="http://foo.bar/&lt;escaped&gt;.mp4">'
+                '<a rel="nofollow" href="http://foo.bar/&lt;escaped&gt;.mp4">'
+                'http://foo.bar/&lt;escaped&gt;.mp4</a></video>'
+            ]
+        )
 
     def test_markdown_audio(self):
         """
         markdown audio
         """
-        comment = "http://foo.bar/audio.mp3\nhttp://foo.bar/<escaped>.mp3"
-        md = Markdown(escape=True, hard_wrap=True)
-        comment_md = md.render(comment)
-        self.assertListEqual(comment_md.splitlines(), '<audio controls><source src="http://foo.bar/audio.mp3"><a href="http://foo.bar/audio.mp3">http://foo.bar/audio.mp3</a></audio>'
-                             '\n<audio controls><source src="http://foo.bar/&lt;escaped&gt;.mp3"><a href="http://foo.bar/&lt;escaped&gt;.mp3">http://foo.bar/&lt;escaped&gt;.mp3</a></audio>'.splitlines())
+        comment = (
+            "http://foo.bar/audio.mp3\n"
+            "http://foo.bar/<escaped>.mp3"
+        )
+        comment_md = Markdown().render(comment)
+        self.assertListEqual(
+            comment_md.splitlines(),
+            [
+                '<audio controls><source src="http://foo.bar/audio.mp3"><a '
+                'rel="nofollow" href="http://foo.bar/audio.mp3">http://foo.bar/audio.mp3</a></audio>',
+                '<audio controls><source src="http://foo.bar/&lt;escaped&gt;.mp3"><a '
+                'rel="nofollow" href="http://foo.bar/&lt;escaped&gt;.mp3">'
+                'http://foo.bar/&lt;escaped&gt;.mp3</a></audio>'
+            ]
+        )
 
     def test_markdown_poll(self):
         """
@@ -212,7 +274,7 @@ class UtilsMarkdownTests(TestCase):
                   "2. opt 2\n" \
                   "3. opt 3\n" \
                   "[/poll]"
-        md = Markdown(escape=True, hard_wrap=True)
+        md = Markdown()
         comment_md = md.render(comment)
         self.assertEqual(comment_md, '<poll name=foo_1>')
         self.assertEqual(md.get_polls(), {
@@ -240,7 +302,7 @@ class UtilsMarkdownTests(TestCase):
                       "1. opt 1\n" \
                       "2. opt 2\n" \
                       "[/poll]"
-            md = Markdown(escape=True, hard_wrap=True)
+            md = Markdown()
             comment_md = md.render(comment)
             self.assertEqual(comment_md, '<poll name=foo_1>')
             self.assertEqual(md.get_polls(), {
@@ -269,7 +331,7 @@ class UtilsMarkdownTests(TestCase):
         comment = "[poll name=foo_1]\n" \
                   "1. opt 1\n" \
                   "[/poll]"
-        md = Markdown(escape=True, hard_wrap=True)
+        md = Markdown()
         comment_md = md.render(comment)
         self.assertEqual(comment_md, '<p>[poll name=foo_1]<br>1. opt 1<br>[/poll]</p>')
         self.assertEqual(md.get_polls(), {'polls': [], 'choices': []})
@@ -280,7 +342,7 @@ class UtilsMarkdownTests(TestCase):
         """
         comment = "[poll name=foo_1]\n" \
                   "[/poll]"
-        md = Markdown(escape=True, hard_wrap=True)
+        md = Markdown()
         comment_md = md.render(comment)
         self.assertEqual(comment_md, '<p>[poll name=foo_1]<br>[/poll]</p>')
         self.assertEqual(md.get_polls(), {'polls': [], 'choices': []})
@@ -293,7 +355,7 @@ class UtilsMarkdownTests(TestCase):
                   "1. opt 1\n" \
                   "2. opt 2\n" \
                   "[/poll]"
-        md = Markdown(escape=True, hard_wrap=True)
+        md = Markdown()
         comment_md = md.render(comment)
         self.assertEqual(comment_md, '<p>[poll]<br>1. opt 1<br>2. opt 2<br>[/poll]</p>')
         self.assertEqual(md.get_polls(), {'polls': [], 'choices': []})
@@ -309,7 +371,7 @@ class UtilsMarkdownTests(TestCase):
                   "2. opt 2\n" \
                   "[/poll]\n" \
                   "bar"
-        md = Markdown(escape=True, hard_wrap=True)
+        md = Markdown()
         comment_md = md.render(comment)
         self.assertEqual(comment_md, '<p>foo</p>\n<poll name=foo_1>\n<p>bar</p>')
 
@@ -326,7 +388,7 @@ class UtilsMarkdownTests(TestCase):
                   "1. opt 1\n" \
                   "2. opt 2\n" \
                   "[/poll]"
-        md = Markdown(escape=True, hard_wrap=True)
+        md = Markdown()
         comment_md = md.render(comment)
         self.assertEqual(comment_md, '<poll name=foo_1>\n<poll name=foo_2>')
         polls = md.get_polls()
@@ -344,7 +406,7 @@ class UtilsMarkdownTests(TestCase):
                   "1. %(description)s\n" \
                   "2. %(description)s\n" \
                   "[/poll]" % {'name': name, 'title': title, 'description': description}
-        md = Markdown(escape=True, hard_wrap=True)
+        md = Markdown()
         comment_md = md.render(comment)
         self.assertEqual(comment_md, '<poll name=%s>' % name[:255])
         polls = md.get_polls()
@@ -363,7 +425,7 @@ class UtilsMarkdownTests(TestCase):
                   "1. <i'm bad>\n" \
                   "2. option\n" \
                   "[/poll]"
-        md = Markdown(escape=True, hard_wrap=True)
+        md = Markdown()
         md.render(comment)
         polls = md.get_polls()
         self.assertEqual(polls['choices'][0]['description'], '&lt;i&#39;m bad&gt;')
@@ -377,7 +439,7 @@ class UtilsMarkdownTests(TestCase):
                   "1. option1\n" \
                   "2. option2\n" \
                   "[/poll]"
-        md = Markdown(escape=True, hard_wrap=True)
+        md = Markdown()
         md.render(comment)
         polls = md.get_polls()
         self.assertEqual(polls['polls'][0]['title'], '&lt;i&#39;m bad&gt;')
@@ -389,7 +451,7 @@ class UtilsMarkdownTests(TestCase):
         limit = 20  # todo: change to setting
         opts = '\n'.join('%s. opt' % x for x in range(limit))
         comment = "[poll name=foo]\n" + opts + "\n[/poll]"
-        md = Markdown(escape=True, hard_wrap=True)
+        md = Markdown()
         comment_md = md.render(comment)
         self.assertEqual(comment_md, '<poll name=foo>')
         polls = md.get_polls()
@@ -404,7 +466,7 @@ class UtilsMarkdownTests(TestCase):
                   "1. opt 1\n" \
                   "2. opt 2\n" \
                   "[/poll]"
-        md = Markdown(escape=True, hard_wrap=True)
+        md = Markdown()
         polls = md.get_polls()
         polls['choices'].extend({} for _ in range(limit))
         comment_md = md.render(comment)
@@ -419,7 +481,7 @@ class UtilsMarkdownTests(TestCase):
         limit = 20  # todo: change to setting
         opts = '\n'.join('%s. opt' % x for x in range(limit + 1))
         comment = "[poll name=foo]\n" + opts + "\n[/poll]"
-        md = Markdown(escape=True, hard_wrap=True)
+        md = Markdown()
         comment_md = md.render(comment)
         self.assertEqual(comment_md, '<p>[poll name=foo]<br>' + opts.replace('\n', '<br>') + '<br>[/poll]</p>')
         polls = md.get_polls()
@@ -433,7 +495,7 @@ class UtilsMarkdownTests(TestCase):
                   "1. opt 1\n" \
                   "2. opt 2\n" \
                   "[/poll]"
-        md = Markdown(escape=True, hard_wrap=True)
+        md = Markdown()
         polls = md.get_polls()
         polls['polls'].append({'name': 'foo'})
         comment_md = md.render(comment)
@@ -451,7 +513,7 @@ class UtilsMarkdownTests(TestCase):
                   "1. opt 2\n" \
                   "2. opt 2\n" \
                   "[/poll]"
-        md = Markdown(escape=True, hard_wrap=True)
+        md = Markdown()
         comment_md = md.render(comment)
         self.assertEqual(comment_md, '<p>[poll name=foo]<br>1. opt 1<br>1. opt 2<br>2. opt 2<br>[/poll]</p>')
         polls = md.get_polls()
@@ -470,7 +532,7 @@ class UtilsMarkdownTests(TestCase):
                   "02. opt 2\n" \
                   "002. opt 2\n" \
                   "[/poll]"
-        md = Markdown(escape=True, hard_wrap=True)
+        md = Markdown()
         comment_md = md.render(comment)
         self.assertEqual(comment_md, '<p>[poll name=foo]<br>'
                                      '1. opt 1<br>'
@@ -492,7 +554,7 @@ class UtilsMarkdownTests(TestCase):
                   "1. opt 1\n" \
                   "2. opt 2\n" \
                   "[/poll]"
-        md = Markdown(escape=True, hard_wrap=True)
+        md = Markdown()
         comment_md = md.render(comment)
         self.assertEqual(comment_md, '<p>[poll name=foo min=2 max=1]<br>1. opt 1<br>2. opt 2<br>[/poll]</p>')
         polls = md.get_polls()
@@ -507,7 +569,7 @@ class UtilsMarkdownTests(TestCase):
                   "1. opt 1\n" \
                   "2. opt 2\n" \
                   "[/poll]"
-        md = Markdown(escape=True, hard_wrap=True)
+        md = Markdown()
         comment_md = md.render(comment)
         self.assertEqual(comment_md, '<p>[poll name=foo min=0]<br>1. opt 1<br>2. opt 2<br>[/poll]</p>')
         polls = md.get_polls()
@@ -522,7 +584,7 @@ class UtilsMarkdownTests(TestCase):
                   "1. opt 1\n" \
                   "2. opt 2\n" \
                   "[/poll]"
-        md = Markdown(escape=True, hard_wrap=True)
+        md = Markdown()
         comment_md = md.render(comment)
         self.assertEqual(comment_md, '<p>[poll name=foo max=0]<br>1. opt 1<br>2. opt 2<br>[/poll]</p>')
         polls = md.get_polls()
@@ -538,7 +600,7 @@ class UtilsMarkdownTests(TestCase):
                   "2. opt 2\n" \
                   "3. opt 3\n" \
                   "[/poll]"
-        md = Markdown(escape=True, hard_wrap=True)
+        md = Markdown()
         comment_md = md.render(comment)
         self.assertEqual(comment_md, '<poll name=foo>')
         polls = md.get_polls()
@@ -553,7 +615,7 @@ class UtilsMarkdownTests(TestCase):
                   "2. opt 2\n" \
                   "3. opt 3\n" \
                   "[/poll]"
-        md = Markdown(escape=True, hard_wrap=True)
+        md = Markdown()
         comment_md = md.render(comment)
         self.assertEqual(comment_md, '<poll name=foo>')
         polls = md.get_polls()
@@ -574,7 +636,7 @@ class UtilsMarkdownTests(TestCase):
                       "1. opt 1\n" \
                       "2. opt 2\n" \
                       "[/poll]"
-            md = Markdown(escape=True, hard_wrap=True)
+            md = Markdown()
             comment_md = md.render(comment)
             self.assertEqual(comment_md, '<poll name=foo_1>')
             self.assertEqual(
@@ -592,7 +654,7 @@ class UtilsMarkdownTests(TestCase):
                   "1. opt 1\n" \
                   "2. opt 2\n" \
                   "[/poll]"
-        md = Markdown(escape=True, hard_wrap=True)
+        md = Markdown()
         comment_md = md.render(comment)
         self.assertEqual(comment_md, '<poll name=foo>')
         polls = md.get_polls()
@@ -606,7 +668,7 @@ class UtilsMarkdownTests(TestCase):
                   "1. opt 1\n" \
                   "2. opt 2\n" \
                   "[/poll]"
-        md = Markdown(escape=True, hard_wrap=True)
+        md = Markdown()
         comment_md = md.render(comment)
         self.assertEqual(comment_md, '<poll name=foo>')
         polls = md.get_polls()
@@ -620,6 +682,54 @@ class UtilsMarkdownTests(TestCase):
                   "1. opt 1\n" \
                   "2. opt 2\n" \
                   "[/poll]"
-        md = Markdown(escape=True, hard_wrap=True)
+        md = Markdown()
         comment_md = md.render(comment)
         self.assertEqual(comment_md, '<p>[poll name=foo mode=foo]<br>1. opt 1<br>2. opt 2<br>[/poll]</p>')
+
+    def test_autolink(self):
+        """
+        Should parse the link as <a> tag
+        """
+        comment = "http://foo.com"
+        comment_md = Markdown().render(comment)
+        self.assertEqual(comment_md, '<p><a rel="nofollow" href="http://foo.com">http://foo.com</a></p>')
+
+    def test_autolink_without_no_follow(self):
+        """
+        Should parse the link as <a> tag without no-follow
+        """
+        comment = "http://foo.com"
+        comment_md = Markdown(no_follow=False).render(comment)
+        self.assertEqual(comment_md, '<p><a href="http://foo.com">http://foo.com</a></p>')
+
+    def test_link(self):
+        """
+        Should parse the link as <a> tag
+        """
+        comment = "[link](http://foo.com)"
+        comment_md = Markdown().render(comment)
+        self.assertEqual(comment_md, '<p><a rel="nofollow" href="http://foo.com">link</a></p>')
+
+    def test_link_without_no_follow(self):
+        """
+        Should parse the link as <a> tag without no-follow
+        """
+        comment = "[link](http://foo.com)"
+        comment_md = Markdown(no_follow=False).render(comment)
+        self.assertEqual(comment_md, '<p><a href="http://foo.com">link</a></p>')
+
+    def test_link_title(self):
+        """
+        Should parse the link as <a> tag
+        """
+        comment = "[link](http://foo.com \"bar\")"
+        comment_md = Markdown().render(comment)
+        self.assertEqual(comment_md, '<p><a rel="nofollow" href="http://foo.com" title="bar">link</a></p>')
+
+    def test_link_title_without_no_follow(self):
+        """
+        Should parse the link as <a> tag without no-follow
+        """
+        comment = "[link](http://foo.com \"bar\")"
+        comment_md = Markdown(no_follow=False).render(comment)
+        self.assertEqual(comment_md, '<p><a href="http://foo.com" title="bar">link</a></p>')
