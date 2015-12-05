@@ -117,7 +117,7 @@ def email_change_confirm(request, token):
     return redirect(reverse('spirit:user:update'))
 
 
-@login_required
+#@login_required
 def _activity(request, pk, slug, queryset, template, reverse_to, context_name, per_page):
     p_user = get_object_or_404(User, pk=pk)
 
