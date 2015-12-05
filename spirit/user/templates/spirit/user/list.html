@@ -1,0 +1,22 @@
+{% extends "spirit/_base.html" %}
+
+{% load spirit_tags i18n %}
+
+{% block title %}{% trans "User list" %}{% endblock %}
+
+{% block content %}
+
+	<div class="rows">
+
+		{% for u in users %}
+			<div class="row">
+				<div class="row-title">{{ u.username }}</div>
+			</div>
+		{% empty %}
+			<p>{% trans "There are no users here, yet" %}</p>
+		{% endfor %}
+	</div>
+
+	{% render_paginator users %}
+
+{% endblock %}

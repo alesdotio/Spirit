@@ -13,7 +13,7 @@ from django.http import HttpResponsePermanentRedirect
 
 from djconfig import config
 
-from ..core.utils.paginator import yt_paginate
+from ..core.utils.paginator import yt_paginate, paginate
 from .utils.email import send_email_change_email
 from .utils.tokens import UserEmailChangeTokenGenerator
 from ..topic.models import Topic
@@ -190,6 +190,22 @@ def likes(request, pk, slug):
         context_name='comments',
         per_page=config.comments_per_page,
     )
+
+
+def user_list(request):
+    users = User.objects.filter(is_active=True).order_by('date_joined')
+    search = request.GET.get('search', '')
+    if search:
+        users = users.filter(username__icontains=search)
+    users = paginate(
+        users,
+        per_page=100,
+        page_number=request.GET.get('page', 1)
+    )
+    return render(request, 'spirit/user/list.html', {
+        'search': search,
+        'users': users,
+    })
 
 
 @login_required
