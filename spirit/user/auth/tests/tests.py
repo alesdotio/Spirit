@@ -352,6 +352,15 @@ class UserFormTest(TestCase):
         self.assertNotIn('username', form.cleaned_data)
         self.assertNotIn('foo@foo.com', form.cleaned_data)
 
+    def test_registration_password_invalid(self):
+        """
+        invalid password length
+        """
+        form_data = {'username': 'foo', 'email': 'foo@foo.com',
+                     'password1': 'pass', 'password2': 'pass'}
+        form = RegistrationForm(data=form_data)
+        self.assertEqual(form.is_valid(), False)
+
     def test_registration_honeypot(self):
         """
         registration honeypot

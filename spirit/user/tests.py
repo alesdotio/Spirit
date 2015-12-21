@@ -45,11 +45,11 @@ class UserViewTest(TestCase):
         slug = self.user.st.slug
 
         response = self.client.get(reverse('spirit:user:topics', kwargs={'pk': pk, 'slug': slug}))
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('spirit:user:detail', kwargs={'pk': pk, 'slug': slug}))
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('spirit:user:likes', kwargs={'pk': pk, 'slug': slug}))
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
 
         response = self.client.get(reverse('spirit:user:update'))
         self.assertEqual(response.status_code, 302)
