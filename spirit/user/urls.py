@@ -24,6 +24,9 @@ urlpatterns = [
     url(r'^likes/(?P<pk>\d+)/$', views.likes, kwargs={'slug': "", }, name='likes'),
     url(r'^likes/(?P<pk>\d+)/(?P<slug>[\w-]+)/$', views.likes, name='likes'),
 
+    url(r'^likes-received/(?P<pk>\d+)/$', views.likes_received, kwargs={'slug': "", }, name='likes-received'),
+    url(r'^likes-received/(?P<pk>\d+)/(?P<slug>[\w-]+)/$', views.likes_received, name='likes-received'),
+
     url(r'^list/$', views.user_list, name='list'),
 
     url(r'^menu/$', views.menu, name='menu'),

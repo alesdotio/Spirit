@@ -192,6 +192,23 @@ def likes(request, pk, slug):
     )
 
 
+def likes_received(request, pk, slug):
+    user_comments = Comment.objects\
+        .filter(user_id=pk, likes_count__gt=0)\
+        .visible(request.user)\
+        .with_polls(user=request.user)\
+        .order_by('-likes_count', '-pk')
+
+    return _activity(
+        request, pk, slug,
+        queryset=user_comments,
+        template='spirit/user/profile_likes_received.html',
+        reverse_to='spirit:user:likes',
+        context_name='comments',
+        per_page=config.comments_per_page,
+    )
+
+
 def user_list(request):
     users = User.objects.filter(is_active=True).order_by('date_joined')
     search = request.GET.get('search', '')
