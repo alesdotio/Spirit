@@ -1,3 +1,13 @@
+0.4.6
+==================
+
+* Improvement: Updated mistune (markdown) dependency
+* Fix: Facebook share link (#87 thanks to @initialkommit)
+* Improvement: Adds email confirmation in registration
+* Improvement: Removes password confirmation in registration
+* Improvement: Login message changed to inform when the username is not found
+* Improvement: Force HTML5 youtube player
+
 0.4.5
 ==================
 
