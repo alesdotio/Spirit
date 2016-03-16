@@ -1,0 +1,3 @@
+{% load i18n %}
+<h4>{% trans 'Who liked it?' %}</h4>
+<p>{% for like in likes %}{{ like.user }}{% if not forloop.last %}, {% endif %}{% empty %}{% trans 'Nobody' %}{% endfor %}</p>

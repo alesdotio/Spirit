@@ -39,6 +39,15 @@ def create(request, comment_id):
 
 
 @login_required
+def list(request, comment_id):
+    comment = get_object_or_404(Comment.objects.can_access(user=request.user), pk=comment_id)
+    context = {
+        'likes': comment.comment_likes.all()
+    }
+    return render(request, 'spirit/comment/like/list.html', context)
+
+
+@login_required
 def delete(request, pk):
     like = get_object_or_404(CommentLike, pk=pk, user=request.user)
 
