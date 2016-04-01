@@ -113,7 +113,7 @@ def index_active(request):
         .global_()\
         .with_bookmarks(user=request.user)\
         .order_by('-is_globally_pinned', '-last_active')\
-        .select_related('category')
+        .select_related('category', 'user', 'user__st')
 
     topics = yt_paginate(
         topics,

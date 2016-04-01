@@ -210,10 +210,10 @@ def likes_received(request, pk, slug):
 
 
 def user_list(request):
-    users = User.objects.filter(is_active=True).order_by('date_joined')
+    users = User.objects.filter(is_active=True).order_by('date_joined').select_related('st')
     search = request.GET.get('search', '')
     if search:
-        users = users.filter(username__icontains=search)
+        users = users.filter(username__icontains=search).select_related('st')
     users = paginate(
         users,
         per_page=100,
