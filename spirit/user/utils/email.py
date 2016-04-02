@@ -50,7 +50,9 @@ def send_email_change_email(request, user, new_email):
     template_name = 'spirit/user/email_change_email.html'
     token = UserEmailChangeTokenGenerator().generate(user, new_email)
     context = {'token': token, }
-    sender(request, subject, template_name, context, [user.email, ])
+    # user might not have an email if using social auth
+    send_to_email = user.email if user.email else new_email
+    sender(request, subject, template_name, context, [send_to_email, ])
 
 
 def send_notification_email(request, topic_notifications, comment):
