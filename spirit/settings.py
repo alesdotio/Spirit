@@ -42,6 +42,8 @@ ST_BASE_DIR = os.path.dirname(__file__)
 
 ST_INVALID_USERNAMES = []
 
+ST_ALLOW_ONE_USERNAME_CHANGE = False
+
 #
 # Django & Spirit settings defined below...
 #

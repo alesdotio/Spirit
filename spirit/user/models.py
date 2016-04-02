@@ -60,6 +60,8 @@ class UserProfile(models.Model):
     given_likes_count = models.PositiveIntegerField(_("given likes count"), default=0)
     received_likes_count = models.PositiveIntegerField(_("received likes count"), default=0)
 
+    last_username_change_date = models.DateTimeField(blank=True, null=True)
+
     class Meta:
         verbose_name = _("forum profile")
         verbose_name_plural = _("forum profiles")
@@ -81,6 +83,9 @@ class UserProfile(models.Model):
 
     def get_absolute_url(self):
         return reverse('spirit:user:detail', kwargs={'pk': self.user.pk, 'slug': self.slug})
+
+    def can_change_username(self):
+        return bool(self.last_username_change_date)
 
     def increase_comment_count(self):
         UserProfile.objects.filter(pk=self.pk).update(comment_count=F('comment_count') + 1)

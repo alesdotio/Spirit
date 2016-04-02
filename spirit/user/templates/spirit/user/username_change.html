@@ -1,0 +1,18 @@
+{% extends "spirit/_base.html" %}
+
+{% load i18n %}
+
+{% block title %}{% trans "Username change" %}{% endblock %}
+
+{% block content %}
+
+    <h1 class="headline">{% trans "Username change" %}</h1>
+
+    <form action="." method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% include "spirit/_form.html" %}
+
+        <input class="button" type="submit" name="post" value="{% trans 'Save' %}" />
+    </form>
+
+{% endblock %}

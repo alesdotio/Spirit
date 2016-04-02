@@ -12,6 +12,17 @@ from django.conf import settings
 __all__ = ['AutoSlugField', ]
 
 
+def slugify_field(value, max_length):
+    # TODO: Django 1.9 will support unicode slugs
+    if settings.ST_UNICODE_SLUGS:
+        # TODO: mark as safe?
+        slug = unicode_slugify(smart_text(value), ok='-')
+    else:
+        slug = slugify(smart_text(value))
+
+    return slug[:max_length].strip('-')
+
+
 class AutoSlugField(SlugField):
     """
     Auto populates itself from another field.
@@ -40,14 +51,7 @@ class AutoSlugField(SlugField):
         if value is None:
             return default
 
-        # TODO: Django 1.9 will support unicode slugs
-        if settings.ST_UNICODE_SLUGS:
-            # TODO: mark as safe?
-            slug = unicode_slugify(smart_text(value), ok='-')
-        else:
-            slug = slugify(smart_text(value))
-
-        slug = slug[:self.max_length].strip('-')
+        slug = slugify_field(value, self.max_length)
 
         # Update the model’s attribute
         setattr(instance, self.attname, slug)

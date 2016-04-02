@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals
 
+import datetime
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.urlresolvers import reverse
@@ -10,17 +11,21 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib import messages
 from django.utils.translation import ugettext as _
 from django.http import HttpResponsePermanentRedirect
+from django.conf import settings
+from django.http import HttpResponseNotFound
 
 from djconfig import config
 
+from spirit.core.utils.models import slugify_field
 from ..core.utils.paginator import yt_paginate, paginate
 from .utils.email import send_email_change_email
 from .utils.tokens import UserEmailChangeTokenGenerator
 from ..topic.models import Topic
 from ..comment.models import Comment
-from .forms import UserProfileForm, EmailChangeForm, UserForm, EmailCheckForm, AvatarChangeForm
+from .forms import UserProfileForm, EmailChangeForm, UserForm, EmailCheckForm, AvatarChangeForm, UsernameChangeForm
 
 User = get_user_model()
+username_max_length = User._meta.get_field('username').max_length
 
 
 @login_required
@@ -228,3 +233,25 @@ def user_list(request):
 @login_required
 def menu(request):
     return render(request, 'spirit/user/menu.html')
+
+
+@login_required
+def username_change(request):
+    if not settings.ST_ALLOW_ONE_USERNAME_CHANGE:
+        return HttpResponseNotFound('Username change is not enabled.')
+    if request.method == 'POST':
+        form = UsernameChangeForm(user=request.user, data=request.POST, files=request.FILES)
+        if form.is_valid():
+            request.user.username = form.cleaned_data['new_username']
+            request.user.save()
+            request.user.st.slug = slugify_field(request.user.username, username_max_length)
+            request.user.st.last_username_change_date = datetime.datetime.now()
+            request.user.st.save()
+            messages.info(request, _("Your username has been changed!"))
+            return redirect(reverse('spirit:user:update'))
+    else:
+        form = UsernameChangeForm(user=request.user)
+
+    context = {'form': form, }
+
+    return render(request, 'spirit/user/username_change.html', context)
