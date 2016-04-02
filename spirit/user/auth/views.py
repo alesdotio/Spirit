@@ -45,6 +45,9 @@ def custom_logout(request, **kwargs):
 
 @ratelimit(field='email', rate=settings.ST_RATELIMIT_FOR_AUTH)
 def custom_password_reset(request, **kwargs):
+    if request.user.is_authenticated() and not request.user.email:
+        messages.error(request, _("You do not have a valid email set. Please verify your email first."))
+        return redirect('spirit:user:update')
     if request.method == "POST" and request.is_limited:
         return redirect(reverse("spirit:user:auth:password-reset"))
 
