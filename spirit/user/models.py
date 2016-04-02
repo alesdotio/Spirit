@@ -64,6 +64,9 @@ class UserProfile(models.Model):
         verbose_name = _("forum profile")
         verbose_name_plural = _("forum profiles")
 
+    def __unicode__(self):
+        return u"%s" % self.user
+
     def __str__(self):
         return "%s" % self.user
 
