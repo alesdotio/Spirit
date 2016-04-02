@@ -115,6 +115,10 @@ def email_change_confirm(request, token):
         if form.is_valid():
             user.email = form.get_email()
             user.save()
+            if not user.st.is_verified:
+                # verify the user in case they were not already
+                user.st.is_verified = True
+                user.st.save()
             messages.info(request, _("Your email has been changed!"))
             return redirect(reverse('spirit:user:update'))
 
