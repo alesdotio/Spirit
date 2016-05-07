@@ -19,10 +19,12 @@ def topic_viewed(request, topic):
                 bookmark.comment_number = comment_number
                 bookmark.save()
         except CommentBookmark.DoesNotExist:
-            CommentBookmark.objects.create(
+            CommentBookmark.objects.update_or_create(
                 user=user,
                 topic=topic,
-                comment_number=comment_number,
+                defaults={
+                    'comment_number': comment_number,
+                }
             )
         TopicNotification.mark_as_read(user=user, topic=topic)
         TopicUnread.create_or_mark_as_read(user=user, topic=topic)
