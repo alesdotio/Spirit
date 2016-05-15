@@ -128,7 +128,7 @@ class TopicViewTest(TestCase):
         response = self.client.post(
             reverse('spirit:topic:publish'),
             {'comment': 'foo', 'title': topic_title, 'category': category.pk})
-        self.assertEqual(len(Comment.objects.all()), 1)  # Prevented!
+        self.assertEqual(len(Topic.objects.all()), 1)  # Prevented!
 
         self.assertRedirects(
             response,
@@ -141,7 +141,7 @@ class TopicViewTest(TestCase):
         self.client.post(
             reverse('spirit:topic:publish'),
             {'comment': 'foo', 'title': 'new topic', 'category': category.pk})
-        self.assertEqual(len(Comment.objects.all()), 2)
+        self.assertEqual(len(Topic.objects.all()), 2)
 
     @override_settings(ST_DOUBLE_POST_THRESHOLD_MINUTES=10)
     def test_topic_publish_same_post_into_another_topic(self):
@@ -434,7 +434,6 @@ class TopicFormTest(TestCase):
         """
         category = utils.create_category()
         form_data = {
-            'comment': 'foo',
             'title': 'foobar',
             'category': category.pk}
         form = TopicForm(self.user, data=form_data)
@@ -448,7 +447,6 @@ class TopicFormTest(TestCase):
         category = utils.create_category()
         title = 'title foobar'
         form_data = {
-            'comment': 'foo',
             'title': title,
             'category': category.pk}
         form = TopicForm(self.user, data=form_data)
@@ -467,7 +465,6 @@ class TopicFormTest(TestCase):
         category = utils.create_category()
         topic_hash = '1' * 32
         form_data = {
-            'comment': 'foo',
             'title': 'foobar',
             'category': category.pk,
             'topic_hash': topic_hash}
