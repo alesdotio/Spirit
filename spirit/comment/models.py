@@ -97,6 +97,13 @@ class Comment(models.Model):
             comment_html="action"
         )
 
+    @classmethod
+    def get_last_for_topic(cls, topic_id):
+        return (cls.objects
+                .filter(topic_id=topic_id)
+                .order_by('pk')
+                .last())
+
 
 def increase_user_profile_comment_count(sender, instance, created, **kwargs):
     if created and not instance.topic.category.is_private:

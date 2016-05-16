@@ -7,7 +7,6 @@ from django.contrib.auth.models import Group
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 from django.core.cache import cache
-from django.conf import settings
 
 from ..core.tests import utils
 from spirit.comment.models import Comment
@@ -24,7 +23,7 @@ class CategoryViewTest(TestCase):
         self.subcategory_1 = utils.create_subcategory(self.category_1)
         self.category_2 = utils.create_category(title="cat2")
         self.category_removed = utils.create_category(title="cat3", is_removed=True)
-        self.uncategorized = Category.objects.get(pk=settings.ST_UNCATEGORIZED_CATEGORY_PK)
+        self.uncategorized = Category.objects.get(title="Uncategorized")
 
     def test_category_restrict_access(self):
         """
