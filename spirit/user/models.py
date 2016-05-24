@@ -9,7 +9,9 @@ from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.utils.deconstruct import deconstructible
+from django.utils import timezone
 import hashlib
+import datetime
 
 from ..core.utils.timezone import TIMEZONE_CHOICES
 from ..core.utils.models import AutoSlugField
@@ -86,6 +88,10 @@ class UserProfile(models.Model):
 
     def can_change_username(self):
         return bool(self.last_username_change_date)
+
+    @property
+    def is_online(self):
+        return self.last_seen > timezone.now() - datetime.timedelta(minutes=5)
 
     def increase_comment_count(self):
         UserProfile.objects.filter(pk=self.pk).update(comment_count=F('comment_count') + 1)
