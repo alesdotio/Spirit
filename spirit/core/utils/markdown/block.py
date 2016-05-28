@@ -39,7 +39,6 @@ class BlockGrammar(mistune.BlockGrammar):
 
     # Try to get the video ID. Works for URLs of the form:
     # * https://www.youtube.com/watch?v=Z0UISCEe52Y
-    # * https://www.youtube.com/watch?v=Z0UISCEe52Y&t=1m30s
     # * http://youtu.be/afyK1HSFfgw
     # * https://www.youtube.com/embed/vsF0K3Ou1v0
     #

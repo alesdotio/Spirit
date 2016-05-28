@@ -11,7 +11,9 @@ from django.utils import timezone
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.utils.deconstruct import deconstructible
+from django.utils import timezone
 import hashlib
+import datetime
 
 from ..core.utils.timezone import TIMEZONE_CHOICES
 from ..core.utils.models import AutoSlugField
@@ -95,6 +97,10 @@ class UserProfile(models.Model):
     def can_change_username(self):
         return bool(self.last_username_change_date)
 
+    @property
+    def is_online(self):
+        return self.last_seen > timezone.now() - datetime.timedelta(minutes=5)
+
     def increase_comment_count(self):
         UserProfile.objects.filter(pk=self.pk).update(comment_count=F('comment_count') + 1)
 
@@ -118,21 +124,6 @@ class UserProfile(models.Model):
 
     def decrease_received_likes_count(self):
         UserProfile.objects.filter(pk=self.pk).update(received_likes_count=F('received_likes_count') - 1)
-
-    def update_post_hash(self, post_hash):
-        assert self.pk
-
-        # Let the DB do the hash
-        # comparison for atomicity
-        return bool(UserProfile.objects
-                    .filter(pk=self.pk)
-                    .exclude(
-                        last_post_hash=post_hash,
-                        last_post_on__gte=timezone.now() - timedelta(
-                            minutes=settings.ST_DOUBLE_POST_THRESHOLD_MINUTES))
-                    .update(
-                        last_post_hash=post_hash,
-                        last_post_on=timezone.now()))
 
     def update_post_hash(self, post_hash):
         assert self.pk
