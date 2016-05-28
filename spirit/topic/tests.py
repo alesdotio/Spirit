@@ -5,7 +5,6 @@ import datetime
 import hashlib
 
 from django.test import TestCase, RequestFactory, override_settings
-from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
@@ -27,7 +26,7 @@ from .unread.models import TopicUnread
 class TopicViewTest(TestCase):
 
     def setUp(self):
-        cache.clear()
+        utils.cache_clear()
         self.user = utils.create_user()
 
     def test_topic_publish(self):
@@ -109,6 +108,7 @@ class TopicViewTest(TestCase):
         response = self.client.get(reverse('spirit:topic:publish', kwargs={'category_id': str(99), }))
         self.assertEqual(response.status_code, 404)
 
+
     @override_settings(ST_DOUBLE_POST_THRESHOLD_MINUTES=10)
     def test_topic_publish_double_post(self):
         """
@@ -125,7 +125,7 @@ class TopicViewTest(TestCase):
         self.assertEqual(len(Topic.objects.all()), 1)
 
         # Double post
-        cache.clear()  # Clear rate limit
+        utils.cache_clear()  # Clear rate limit
         response = self.client.post(
             reverse('spirit:topic:publish'),
             {'comment': 'foo', 'title': topic_title, 'category': category.pk})
@@ -138,7 +138,7 @@ class TopicViewTest(TestCase):
             target_status_code=200)
 
         # New post
-        cache.clear()  # Clear rate limit
+        utils.cache_clear()  # Clear rate limit
         self.client.post(
             reverse('spirit:topic:publish'),
             {'comment': 'foo', 'title': 'new topic', 'category': category.pk})
@@ -159,7 +159,7 @@ class TopicViewTest(TestCase):
             {'comment': 'foo', 'title': topic_title, 'category': category.pk})
         self.assertEqual(len(Topic.objects.all()), 1)
 
-        cache.clear()  # Clear rate limit
+        utils.cache_clear()  # Clear rate limit
         self.client.post(
             reverse('spirit:topic:publish'),
             {'comment': 'foo', 'title': topic_title, 'category': category_another.pk})
@@ -404,7 +404,7 @@ class TopicViewTest(TestCase):
 class TopicFormTest(TestCase):
 
     def setUp(self):
-        cache.clear()
+        utils.cache_clear()
         self.user = utils.create_user()
 
     def test_topic_publish(self):
@@ -500,7 +500,7 @@ class TopicFormTest(TestCase):
 class TopicUtilsTest(TestCase):
 
     def setUp(self):
-        cache.clear()
+        utils.cache_clear()
         self.user = utils.create_user()
 
     def test_topic_viewed(self):
@@ -528,7 +528,7 @@ class TopicUtilsTest(TestCase):
 class TopicModelsTest(TestCase):
 
     def setUp(self):
-        cache.clear()
+        utils.cache_clear()
         self.user = utils.create_user()
         self.category = utils.create_category()
         self.topic = utils.create_topic(category=self.category, user=self.user)

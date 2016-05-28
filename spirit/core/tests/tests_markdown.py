@@ -2,13 +2,12 @@
 
 from __future__ import unicode_literals
 
-from django.core.cache import cache
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils import translation
 from django.utils import timezone
 
-from ..tests import utils as test_utils
+from . import utils
 from ..utils.markdown import Markdown, quotify
 
 
@@ -18,10 +17,10 @@ now_fixed = timezone.now()
 class UtilsMarkdownTests(TestCase):
 
     def setUp(self):
-        cache.clear()
-        self.user = test_utils.create_user(username="nitely")
-        self.user2 = test_utils.create_user(username="esteban")
-        self.user3 = test_utils.create_user(username="áéíóú")
+        utils.cache_clear()
+        self.user = utils.create_user(username="nitely")
+        self.user2 = utils.create_user(username="esteban")
+        self.user3 = utils.create_user(username="áéíóú")
 
     def test_markdown_escape(self):
         """
@@ -190,7 +189,11 @@ class UtilsMarkdownTests(TestCase):
         comment = (
             "https://www.youtube.com/watch?v=Z0UISCEe52Y\n"
             "https://www.youtube.com/watch?v=Z0UISCEe52Y&t=1m13s\n"
+            "https://www.youtube.com/watch?v=O1QQajfobPw&t=1h1m38s\n"
+            "https://www.youtube.com/watch?v=O1QQajfobPw&t=105m\n"
+            "https://www.youtube.com/watch?v=O1QQajfobPw&feature=youtu.be&t=3698\n"
             "http://youtu.be/afyK1HSFfgw\n"
+            "http://youtu.be/O1QQajfobPw?t=1h1m38s\n"
             "https://www.youtube.com/embed/vsF0K3Ou1v0\n"
             "https://www.youtube.com/watch?v=<bad>\n"
             "https://www.noyoutube.com/watch?v=Z0UISCEe52Y\n"
@@ -205,8 +208,16 @@ class UtilsMarkdownTests(TestCase):
                 'allowfullscreen></iframe></span>',
                 '<span class="video"><iframe src="https://www.youtube.com/embed/Z0UISCEe52Y?html5=1&start=73" '
                 'allowfullscreen></iframe></span>',
+                '<span class="video"><iframe src="https://www.youtube.com/embed/O1QQajfobPw?html5=1&start=3698" '
+                'allowfullscreen></iframe></span>',
+                '<span class="video"><iframe src="https://www.youtube.com/embed/O1QQajfobPw?html5=1&start=6300" '
+                'allowfullscreen></iframe></span>',
+                '<span class="video"><iframe src="https://www.youtube.com/embed/O1QQajfobPw?html5=1&start=3698" '
+                'allowfullscreen></iframe></span>',
                 '<span class="video"><iframe src="https://www.youtube.com/embed/afyK1HSFfgw?html5=1"'
                 ' allowfullscreen></iframe></span>',
+                '<span class="video"><iframe src="https://www.youtube.com/embed/O1QQajfobPw?html5=1&start=3698" '
+                'allowfullscreen></iframe></span>',
                 '<span class="video"><iframe src="https://www.youtube.com/embed/vsF0K3Ou1v0?html5=1"'
                 ' allowfullscreen></iframe></span>',
                 '<p><a rel="nofollow" href="https://www.youtube.com/watch?v=">'

@@ -67,6 +67,9 @@ class UserProfile(models.Model):
 
     last_username_change_date = models.DateTimeField(blank=True, null=True)
 
+    last_post_hash = models.CharField(_("last post hash"), max_length=32, blank=True)
+    last_post_on = models.DateTimeField(_("last post on"), null=True, blank=True)
+
     class Meta:
         verbose_name = _("forum profile")
         verbose_name_plural = _("forum profiles")
@@ -115,6 +118,21 @@ class UserProfile(models.Model):
 
     def decrease_received_likes_count(self):
         UserProfile.objects.filter(pk=self.pk).update(received_likes_count=F('received_likes_count') - 1)
+
+    def update_post_hash(self, post_hash):
+        assert self.pk
+
+        # Let the DB do the hash
+        # comparison for atomicity
+        return bool(UserProfile.objects
+                    .filter(pk=self.pk)
+                    .exclude(
+                        last_post_hash=post_hash,
+                        last_post_on__gte=timezone.now() - timedelta(
+                            minutes=settings.ST_DOUBLE_POST_THRESHOLD_MINUTES))
+                    .update(
+                        last_post_hash=post_hash,
+                        last_post_on=timezone.now()))
 
     def update_post_hash(self, post_hash):
         assert self.pk

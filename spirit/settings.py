@@ -14,6 +14,7 @@ ST_RATELIMIT_CACHE = 'default'
 ST_RATELIMIT_FOR_PUBLISH = '1/10s'
 ST_RATELIMIT_FOR_AUTH = '5/5m'
 ST_RATELIMIT_FOR_REGISTER = '2/10s'
+ST_RATELIMIT_SKIP_TIMEOUT_CHECK = False
 
 ST_NOTIFICATIONS_PER_PAGE = 20
 
@@ -98,6 +99,14 @@ CACHES = {
         'LOCATION': 'spirit_cache',
     },
 }
+
+CACHES.update({
+    'st_rate_limit': {
+        'BACKEND': CACHES['default']['BACKEND'],
+        'LOCATION': 'spirit_rl_cache',
+        'TIMEOUT': None
+    }
+})
 
 AUTHENTICATION_BACKENDS = [
     'spirit.user.auth.backends.UsernameAuthBackend',
