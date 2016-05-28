@@ -2,13 +2,12 @@
 
 from __future__ import unicode_literals
 
-from django.core.cache import cache
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils import translation
 from django.utils import timezone
 
-from ..tests import utils as test_utils
+from . import utils
 from ..utils.markdown import Markdown, quotify
 
 
@@ -18,10 +17,10 @@ now_fixed = timezone.now()
 class UtilsMarkdownTests(TestCase):
 
     def setUp(self):
-        cache.clear()
-        self.user = test_utils.create_user(username="nitely")
-        self.user2 = test_utils.create_user(username="esteban")
-        self.user3 = test_utils.create_user(username="áéíóú")
+        utils.cache_clear()
+        self.user = utils.create_user(username="nitely")
+        self.user2 = utils.create_user(username="esteban")
+        self.user3 = utils.create_user(username="áéíóú")
 
     def test_markdown_escape(self):
         """
@@ -60,9 +59,9 @@ class UtilsMarkdownTests(TestCase):
             '*&lt;em&gt;foobar&lt;/em&gt;*\n'
             '&lt;/div&gt;<br>\n'
             '&lt;em&gt;*foo*&lt;/em&gt;<br>\n'
-            '&lt;em&gt;<a class="comment-mention" rel="nofollow" href="/user/1/nitely/">@nitely</a>&lt;/em&gt;<br>\n'
+            '&lt;em&gt;<a class="comment-mention" rel="nofollow" href="%s">@nitely</a>&lt;/em&gt;<br>\n'
             '<em>&lt;em&gt;foobar&lt;/em&gt;</em></p>'
-        ))
+        ) % (self.user.st.get_absolute_url(), ))
 
     def test_markdown_mentions(self):
         """

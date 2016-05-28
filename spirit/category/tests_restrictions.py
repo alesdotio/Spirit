@@ -7,7 +7,6 @@ from django.contrib.auth.models import Group
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 from django.core.cache import cache
-from django.conf import settings
 
 from ..core.tests import utils
 from spirit.comment.models import Comment
@@ -24,7 +23,7 @@ class CategoryViewTest(TestCase):
         self.subcategory_1 = utils.create_subcategory(self.category_1)
         self.category_2 = utils.create_category(title="cat2")
         self.category_removed = utils.create_category(title="cat3", is_removed=True)
-        self.uncategorized = Category.objects.get(pk=settings.ST_UNCATEGORIZED_CATEGORY_PK)
+        self.uncategorized = Category.objects.get(title="Uncategorized")
 
     def test_category_restrict_access(self):
         """
@@ -55,14 +54,16 @@ class CategoryViewTest(TestCase):
 
         # cannot create topics
         utils.login(self)
-        form_data = {'comment': 'foo', 'title': 'foobar', 'category': secret_category.pk}
+        utils.cache_clear()
+        form_data = {'comment': 'foo1', 'title': 'foobar1', 'category': secret_category.pk}
         response = self.client.post(reverse('spirit:topic:publish', kwargs={'category_id': secret_category.pk, }),
                                     form_data)
         self.assertEqual(response.status_code, 404)
         self.assertEqual(Topic.objects.count(), 1)
 
         # cannot comment
-        form_data = {'comment': 'foobar', }
+        utils.cache_clear()
+        form_data = {'comment': 'foo2', }
         response = self.client.post(reverse('spirit:comment:publish', kwargs={'topic_id': secret_topic.pk, }),
                                     form_data)
         self.assertEqual(response.status_code, 404)
@@ -79,14 +80,16 @@ class CategoryViewTest(TestCase):
         )
 
         # can create topics
-        form_data = {'comment': 'foo', 'title': 'foobar', 'category': secret_category.pk}
+        utils.cache_clear()
+        form_data = {'comment': 'foo3', 'title': 'foobar2', 'category': secret_category.pk}
         response = self.client.post(reverse('spirit:topic:publish', kwargs={'category_id': secret_category.pk, }),
                                     form_data)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Topic.objects.count(), 2)
 
         # can comment
-        form_data = {'comment': 'foobar', }
+        utils.cache_clear()
+        form_data = {'comment': 'foo4', }
         response = self.client.post(reverse('spirit:comment:publish', kwargs={'topic_id': secret_topic.pk, }),
                                     form_data)
         self.assertEqual(response.status_code, 302)
@@ -115,14 +118,16 @@ class CategoryViewTest(TestCase):
 
         # cannot create topics
         utils.login(self)
-        form_data = {'comment': 'foo', 'title': 'foobar', 'category': secret_category.pk}
+        utils.cache_clear()
+        form_data = {'comment': 'foo5', 'title': 'foobar3', 'category': secret_category.pk}
         response = self.client.post(reverse('spirit:topic:publish', kwargs={'category_id': secret_category.pk, }),
                                     form_data)
         self.assertEqual(response.status_code, 404)
         self.assertEqual(Topic.objects.count(), 1)
 
         # but can comment
-        form_data = {'comment': 'foobar', }
+        utils.cache_clear()
+        form_data = {'comment': 'foo6', }
         response = self.client.post(reverse('spirit:comment:publish', kwargs={'topic_id': secret_topic.pk, }),
                                     form_data)
         self.assertEqual(response.status_code, 302)
@@ -139,14 +144,16 @@ class CategoryViewTest(TestCase):
         )
 
         # can create topics
-        form_data = {'comment': 'foo', 'title': 'foobar', 'category': secret_category.pk}
+        utils.cache_clear()
+        form_data = {'comment': 'foo7', 'title': 'foobar4', 'category': secret_category.pk}
         response = self.client.post(reverse('spirit:topic:publish', kwargs={'category_id': secret_category.pk, }),
                                     form_data)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Topic.objects.count(), 2)
 
         # can comment
-        form_data = {'comment': 'foobar', }
+        utils.cache_clear()
+        form_data = {'comment': 'foo8', }
         response = self.client.post(reverse('spirit:comment:publish', kwargs={'topic_id': secret_topic.pk, }),
                                     form_data)
         self.assertEqual(response.status_code, 302)
@@ -175,14 +182,16 @@ class CategoryViewTest(TestCase):
 
         # can create topics
         utils.login(self)
-        form_data = {'comment': 'foo', 'title': 'foobar', 'category': secret_category.pk}
+        utils.cache_clear()
+        form_data = {'comment': 'foo9', 'title': 'foobar5', 'category': secret_category.pk}
         response = self.client.post(reverse('spirit:topic:publish', kwargs={'category_id': secret_category.pk, }),
                                     form_data)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Topic.objects.count(), 2)
 
         # but cannot comment
-        form_data = {'comment': 'foobar', }
+        utils.cache_clear()
+        form_data = {'comment': 'foo10', }
         response = self.client.post(reverse('spirit:comment:publish', kwargs={'topic_id': secret_topic.pk, }),
                                     form_data)
         self.assertEqual(response.status_code, 404)
@@ -199,14 +208,16 @@ class CategoryViewTest(TestCase):
         )
 
         # can create topics
-        form_data = {'comment': 'foo', 'title': 'foobar', 'category': secret_category.pk}
+        utils.cache_clear()
+        form_data = {'comment': 'foo11', 'title': 'foobar6', 'category': secret_category.pk}
         response = self.client.post(reverse('spirit:topic:publish', kwargs={'category_id': secret_category.pk, }),
                                     form_data)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Topic.objects.count(), 3)
 
         # can comment
-        form_data = {'comment': 'foobar', }
+        utils.cache_clear()
+        form_data = {'comment': 'foo12', }
         response = self.client.post(reverse('spirit:comment:publish', kwargs={'topic_id': secret_topic.pk, }),
                                     form_data)
         self.assertEqual(response.status_code, 302)

@@ -6,7 +6,6 @@ import datetime
 
 from django.test import TestCase
 from django.core.urlresolvers import reverse
-from django.core.cache import cache
 from django.utils import timezone
 from django.conf import settings
 
@@ -21,23 +20,13 @@ from .models import Category
 class CategoryViewTest(TestCase):
 
     def setUp(self):
-        cache.clear()
+        utils.cache_clear()
         self.user = utils.create_user()
         self.category_1 = utils.create_category(title="cat1")
         self.subcategory_1 = utils.create_subcategory(self.category_1)
         self.category_2 = utils.create_category(title="cat2")
         self.category_removed = utils.create_category(title="cat3", is_removed=True)
-        self.uncategorized = Category.objects.get(pk=settings.ST_UNCATEGORIZED_CATEGORY_PK)
-
-    def test_category_list_view(self):
-        """
-        should display all categories
-        """
-        response = self.client.get(reverse('spirit:category:index'))
-        self.assertEqual(
-            list(response.context['categories']),
-            [self.uncategorized, self.category_1, self.category_2]
-        )
+        self.uncategorized = Category.objects.get(title="Uncategorized")
 
     def test_category_list_view_order(self):
         """
@@ -171,3 +160,30 @@ class CategoryViewTest(TestCase):
         response = self.client.get(reverse('spirit:category:detail', kwargs={'pk': self.category_1.pk,
                                                                              'slug': self.category_1.slug}))
         self.assertEqual(list(response.context['topics']), [topic, ])
+
+
+
+class CategoryMigrationTest(TestCase):
+
+    def setUp(self):
+        utils.cache_clear()
+
+    def test_uncategorized_category(self):
+        """
+        There should be a category named Uncategorized
+        """
+        self.assertEqual(len(Category.objects.filter(title="Uncategorized")), 1)
+
+    def test_private_category(self):
+        """
+        There should be a private category
+        """
+        self.assertEqual(len(Category.objects.filter(
+            pk=settings.ST_TOPIC_PRIVATE_CATEGORY_PK,
+            title="Private")), 1)
+
+    def test_categories(self):
+        """
+        There should be two categories: private and Uncategorized
+        """
+        self.assertEqual(len(Category.objects.all()), 2)

@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 
 from django.test import TestCase
 from django.core.urlresolvers import reverse
-from django.core.cache import cache
 from django.contrib.auth import get_user_model
 from django.template import Template, Context
 
@@ -20,7 +19,7 @@ User = get_user_model()
 class TopicPollViewTest(TestCase):
 
     def setUp(self):
-        cache.clear()
+        utils.cache_clear()
         self.user = utils.create_user()
         self.user2 = utils.create_user()
         self.category = utils.create_category()
@@ -208,7 +207,7 @@ class TopicPollViewTest(TestCase):
 class TopicPollFormTest(TestCase):
 
     def setUp(self):
-        cache.clear()
+        utils.cache_clear()
         self.user = utils.create_user()
         self.user2 = utils.create_user()
         self.category = utils.create_category()
@@ -294,7 +293,7 @@ class TopicPollFormTest(TestCase):
 class TopicPollVoteManyFormTest(TestCase):
 
     def setUp(self):
-        cache.clear()
+        utils.cache_clear()
         self.user = utils.create_user()
         self.user2 = utils.create_user()
         self.category = utils.create_category()
@@ -327,14 +326,6 @@ class TopicPollVoteManyFormTest(TestCase):
         form.load_initial()
         self.assertDictEqual(form.initial, {'choices': self.poll_choice, })
 
-    def test_vote_load_initial_multi(self):
-        """
-        TopicPollVoteManyForm
-        """
-        form = TopicPollVoteManyForm(user=self.user, poll=self.poll_multi)
-        form.load_initial()
-        self.assertDictEqual(form.initial, {'choices': [self.poll_multi_choice, self.poll_multi_choice2], })
-
     def test_vote_load_initial_empty(self):
         """
         TopicPollVoteManyForm
@@ -344,24 +335,6 @@ class TopicPollVoteManyFormTest(TestCase):
         form = TopicPollVoteManyForm(user=self.user, poll=self.poll)
         form.load_initial()
         self.assertEqual(form.initial, {})
-
-    def test_vote_load_initial_choice_limit(self):
-        """
-        Load initial for a single choice poll that was previously a multi choice poll
-        """
-        # multi to single
-        self.poll_multi.choice_limit = 1
-
-        form = TopicPollVoteManyForm(user=self.user, poll=self.poll_multi)
-        form.load_initial()
-        self.assertDictEqual(form.initial, {'choices': self.poll_multi_choice, })
-
-        # single to multi
-        self.poll.choice_limit = 2
-
-        form = TopicPollVoteManyForm(user=self.user, poll=self.poll)
-        form.load_initial()
-        self.assertDictEqual(form.initial, {'choices': [self.poll_choice, ], })
 
     def test_vote_poll_closed(self):
         """
@@ -426,7 +399,7 @@ class TopicPollVoteManyFormTest(TestCase):
 class TopicPollSignalTest(TestCase):
 
     def setUp(self):
-        cache.clear()
+        utils.cache_clear()
         self.user = utils.create_user()
         self.category = utils.create_category()
         self.topic = utils.create_topic(category=self.category, user=self.user)
@@ -464,7 +437,7 @@ class TopicPollSignalTest(TestCase):
 class TopicPollTemplateTagsTest(TestCase):
 
     def setUp(self):
-        cache.clear()
+        utils.cache_clear()
         self.user = utils.create_user()
         self.category = utils.create_category()
         self.topic = utils.create_topic(category=self.category, user=self.user)

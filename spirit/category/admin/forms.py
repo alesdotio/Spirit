@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
+import re
 
 from django import forms
 from django.utils.translation import ugettext_lazy as _
@@ -50,3 +51,10 @@ class CategoryForm(forms.ModelForm):
                                               "can not have a parent since it has childrens"))
 
         return parent
+
+    def clean_color(self):
+        color = self.cleaned_data["color"]
+
+        if color and not re.match(r'^#[A-Fa-f0-9]{3}([A-Fa-f0-9]{3}){0,1}$', color):
+            raise forms.ValidationError(_("The input is not a valid hex color."))
+        return color

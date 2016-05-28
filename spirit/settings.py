@@ -7,7 +7,6 @@ from __future__ import unicode_literals
 import os
 
 ST_TOPIC_PRIVATE_CATEGORY_PK = 1
-ST_UNCATEGORIZED_CATEGORY_PK = 2
 
 ST_RATELIMIT_ENABLE = True
 ST_RATELIMIT_CACHE_PREFIX = 'srl'
@@ -15,10 +14,13 @@ ST_RATELIMIT_CACHE = 'default'
 ST_RATELIMIT_FOR_PUBLISH = '1/10s'
 ST_RATELIMIT_FOR_AUTH = '5/5m'
 ST_RATELIMIT_FOR_REGISTER = '2/10s'
+ST_RATELIMIT_SKIP_TIMEOUT_CHECK = False
 
 ST_NOTIFICATIONS_PER_PAGE = 20
 
+ST_COMMENT_MAX_LEN = 3000
 ST_MENTIONS_PER_COMMENT = 30
+ST_DOUBLE_POST_THRESHOLD_MINUTES = 30
 
 ST_YT_PAGINATOR_PAGE_RANGE = 3
 
@@ -75,7 +77,7 @@ INSTALLED_APPS = [
     'spirit.topic.favorite',
     'spirit.topic.moderate',
     'spirit.topic.notification',
-    'spirit.topic.poll',
+    'spirit.topic.poll',  # todo: remove in Spirit v0.5
     'spirit.topic.private',
     'spirit.topic.unread',
 
@@ -97,6 +99,14 @@ CACHES = {
         'LOCATION': 'spirit_cache',
     },
 }
+
+CACHES.update({
+    'st_rate_limit': {
+        'BACKEND': CACHES['default']['BACKEND'],
+        'LOCATION': 'spirit_rl_cache',
+        'TIMEOUT': None
+    }
+})
 
 AUTHENTICATION_BACKENDS = [
     'spirit.user.auth.backends.UsernameAuthBackend',

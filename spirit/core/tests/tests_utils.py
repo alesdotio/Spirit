@@ -6,7 +6,6 @@ import datetime
 import json
 import os
 
-from django.core.cache import cache
 from django.test import TestCase, RequestFactory
 from django.test.utils import override_settings
 from django.template import Template, Context
@@ -28,7 +27,7 @@ from ..utils.forms import NestedModelChoiceField
 from ..utils.timezone import TIMEZONE_CHOICES
 from ..utils.decorators import moderator_required, administrator_required
 from ..tags import time as ttags_utils
-from ..tests import utils as test_utils
+from . import utils as test_utils
 from ..tags.messages import render_messages
 
 User = get_user_model()
@@ -37,7 +36,7 @@ User = get_user_model()
 class UtilsTests(TestCase):
 
     def setUp(self):
-        cache.clear()
+        test_utils.cache_clear()
 
     def test_render_form_errors(self):
         """
@@ -248,9 +247,9 @@ class UtilsFormsTests(TestCase):
                                        parent_field='parent_id',
                                        label_field='title')
         self.assertSequenceEqual(list(field.choices), [('', '---------'),
-                                                       (3, '%s' % category.title),
-                                                       (5, '--- %s' % subcategory.title),
-                                                       (4, '%s' % category2.title)])
+                                                       (category.pk, '%s' % category.title),
+                                                       (subcategory.pk, '--- %s' % subcategory.title),
+                                                       (category2.pk, '%s' % category2.title)])
 
 
 class UtilsTimezoneTests(TestCase):
@@ -268,7 +267,7 @@ class UtilsTimezoneTests(TestCase):
 class UtilsDecoratorsTests(TestCase):
 
     def setUp(self):
-        cache.clear()
+        test_utils.cache_clear()
         self.user = test_utils.create_user()
 
     def test_moderator_required(self):

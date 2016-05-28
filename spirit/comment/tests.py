@@ -5,9 +5,9 @@ from __future__ import unicode_literals
 import os
 import json
 import shutil
+import hashlib
 
 from django.test import TestCase, RequestFactory
-from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.template import Template, Context
 from django.core.exceptions import PermissionDenied
@@ -39,7 +39,7 @@ User = get_user_model()
 class CommentViewTest(TestCase):
 
     def setUp(self):
-        cache.clear()
+        utils.cache_clear()
         self.user = utils.create_user()
         self.category = utils.create_category()
         self.topic = utils.create_topic(category=self.category, user=self.user)
@@ -52,7 +52,8 @@ class CommentViewTest(TestCase):
         form_data = {'comment': 'foobar', }
         response = self.client.post(reverse('spirit:comment:publish', kwargs={'topic_id': self.topic.pk, }),
                                     form_data)
-        expected_url = reverse('spirit:comment:find', kwargs={'pk': 1, })
+        comment = Comment.objects.all().order_by('-pk').last()
+        expected_url = reverse('spirit:comment:find', kwargs={'pk': comment.pk, })
         self.assertRedirects(response, expected_url, status_code=302, target_status_code=302)
         self.assertEqual(len(Comment.objects.all()), 1)
 
@@ -88,6 +89,62 @@ class CommentViewTest(TestCase):
         finally:
             views.comment_posted = org_comment_posted
 
+    @override_settings(ST_DOUBLE_POST_THRESHOLD_MINUTES=10)
+    def test_comment_publish_double_post(self):
+        """
+        Should prevent double posts
+        """
+        utils.login(self)
+        comment_txt = 'foobar'
+        utils.create_comment(topic=self.topic)
+        self.assertEqual(len(Comment.objects.all()), 1)
+
+        # First post
+        self.client.post(
+            reverse('spirit:comment:publish', kwargs={'topic_id': self.topic.pk}),
+            {'comment': comment_txt})
+        self.assertEqual(len(Comment.objects.all()), 2)
+
+        # Double post
+        utils.cache_clear()  # Clear rate limit
+        response = self.client.post(
+            reverse('spirit:comment:publish', kwargs={'topic_id': self.topic.pk}),
+            {'comment': comment_txt})
+        self.assertEqual(len(Comment.objects.all()), 2)  # Prevented!
+
+        self.assertRedirects(
+            response,
+            expected_url=Comment.get_last_for_topic(self.topic.pk).get_absolute_url(),
+            status_code=302,
+            target_status_code=302)
+
+        # New post
+        utils.cache_clear()  # Clear rate limit
+        self.client.post(
+            reverse('spirit:comment:publish', kwargs={'topic_id': self.topic.pk}),
+            {'comment': 'not a foobar'})
+        self.assertEqual(len(Comment.objects.all()), 3)
+
+    @override_settings(ST_DOUBLE_POST_THRESHOLD_MINUTES=10)
+    def test_comment_publish_same_post_into_another_topic(self):
+        """
+        Should not prevent from posting the same comment into another topic
+        """
+        utils.login(self)
+        topic_another = utils.create_topic(category=self.topic.category)
+        comment_txt = 'foobar'
+
+        self.client.post(
+            reverse('spirit:comment:publish', kwargs={'topic_id': self.topic.pk}),
+            {'comment': comment_txt})
+        self.assertEqual(len(Comment.objects.all()), 1)
+
+        utils.cache_clear()  # Clear rate limit
+        self.client.post(
+            reverse('spirit:comment:publish', kwargs={'topic_id': topic_another.pk}),
+            {'comment': comment_txt})
+        self.assertEqual(len(Comment.objects.all()), 2)
+
     def test_comment_publish_on_private(self):
         """
         create comment on private topic
@@ -98,7 +155,8 @@ class CommentViewTest(TestCase):
         form_data = {'comment': 'foobar', }
         response = self.client.post(reverse('spirit:comment:publish', kwargs={'topic_id': private.topic.pk, }),
                                     form_data)
-        expected_url = reverse('spirit:comment:find', kwargs={'pk': 1, })
+        comment = Comment.objects.all().order_by('-pk').last()
+        expected_url = reverse('spirit:comment:find', kwargs={'pk': comment.pk, })
         self.assertRedirects(response, expected_url, status_code=302, target_status_code=302)
         self.assertEqual(len(Comment.objects.all()), 1)
 
@@ -205,7 +263,7 @@ class CommentViewTest(TestCase):
         form_data = {'comment': 'barfoo', }
         response = self.client.post(reverse('spirit:comment:update', kwargs={'pk': comment.pk, }),
                                     form_data)
-        expected_url = reverse('spirit:comment:find', kwargs={'pk': 1, })
+        expected_url = reverse('spirit:comment:find', kwargs={'pk': comment.pk, })
         self.assertRedirects(response, expected_url, status_code=302, target_status_code=302)
         self.assertEqual(Comment.objects.get(pk=comment.pk).comment, 'barfoo')
 
@@ -240,7 +298,7 @@ class CommentViewTest(TestCase):
         form_data = {'comment': 'barfoo', }
         response = self.client.post(reverse('spirit:comment:update', kwargs={'pk': comment.pk, }),
                                     form_data)
-        expected_url = reverse('spirit:comment:find', kwargs={'pk': 1, })
+        expected_url = reverse('spirit:comment:find', kwargs={'pk': comment.pk, })
         self.assertRedirects(response, expected_url, status_code=302, target_status_code=302)
         self.assertEqual(Comment.objects.get(pk=comment.pk).comment, 'barfoo')
 
@@ -355,7 +413,7 @@ class CommentViewTest(TestCase):
         """
         comment = utils.create_comment(user=self.user, topic=self.topic)
         response = self.client.post(reverse('spirit:comment:find', kwargs={'pk': comment.pk, }))
-        expected_url = comment.topic.get_absolute_url() + "#c%d" % comment.pk
+        expected_url = comment.topic.get_absolute_url() + "#c1"
         self.assertRedirects(response, expected_url, status_code=302)
 
     def test_comment_image_upload(self):
@@ -425,7 +483,7 @@ class CommentViewTest(TestCase):
 class CommentModelsTest(TestCase):
 
     def setUp(self):
-        cache.clear()
+        utils.cache_clear()
         self.user = utils.create_user()
         self.category = utils.create_category()
         self.topic = utils.create_topic(category=self.category, user=self.user)
@@ -479,11 +537,19 @@ class CommentModelsTest(TestCase):
         Comment.create_moderation_action(user=self.user, topic=self.topic, action=1)
         self.assertEqual(Comment.objects.filter(user=self.user, topic=self.topic, action=1).count(), 1)
 
+    def test_comment_get_last_for_topic(self):
+        """
+        Should return last comment for a given topic
+        """
+        utils.create_comment(topic=self.topic)
+        comment_last = utils.create_comment(topic=self.topic)
+        self.assertEqual(Comment.get_last_for_topic(self.topic.pk), comment_last)
+
 
 class CommentTemplateTagTests(TestCase):
 
     def setUp(self):
-        cache.clear()
+        utils.cache_clear()
         self.user = utils.create_user()
         self.category = utils.create_category()
         self.topic = utils.create_topic(category=self.category, user=self.user)
@@ -518,7 +584,7 @@ class CommentTemplateTagTests(TestCase):
 class CommentFormTest(TestCase):
 
     def setUp(self):
-        cache.clear()
+        utils.cache_clear()
         self.user = utils.create_user()
         self.category = utils.create_category()
         self.topic = utils.create_topic(category=self.category)
@@ -551,6 +617,30 @@ class CommentFormTest(TestCase):
         self.user.st.is_moderator = True
         comment2 = form.save()
         self.assertEqual(comment2.comment_html, '<p><a href="http://foo.com">http://foo.com</a></p>')
+
+    def test_comment_get_comment_hash(self):
+        """
+        Should return the comment hash
+        """
+        comment_txt = 'foo'
+        form_data = {'comment': comment_txt}
+        form = CommentForm(data=form_data, topic=self.topic)
+        self.assertTrue(form.is_valid())
+
+        comment_txt_to_hash = '{}thread-{}'.format(comment_txt, self.topic.pk)
+        self.assertEqual(
+            form.get_comment_hash(),
+            hashlib.md5(comment_txt_to_hash.encode('utf-8')).hexdigest())
+
+    def test_comment_get_comment_hash_from_field(self):
+        """
+        Should return the comment hash from field
+        """
+        comment_hash = '1' * 32
+        form_data = {'comment': 'foo', 'comment_hash': comment_hash}
+        form = CommentForm(data=form_data, topic=self.topic)
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.get_comment_hash(), comment_hash)
 
     def test_comments_move(self):
         comment = utils.create_comment(user=self.user, topic=self.topic)
@@ -620,11 +710,29 @@ class CommentFormTest(TestCase):
         form = CommentImageForm(data={}, files=files)
         self.assertFalse(form.is_valid())
 
+    def test_comment_max_len(self):
+        """
+        Restrict comment len
+        """
+        comment = 'a' * settings.ST_COMMENT_MAX_LEN
+        form_data = {'comment': comment, }
+        form = CommentForm(data=form_data)
+        self.assertEqual(form.is_valid(), True)
+
+    def test_comment_max_len_invalid(self):
+        """
+        Restrict comment len
+        """
+        comment = 'a' * (settings.ST_COMMENT_MAX_LEN + 1)
+        form_data = {'comment': comment, }
+        form = CommentForm(data=form_data)
+        self.assertEqual(form.is_valid(), False)
+
 
 class CommentUtilsTest(TestCase):
 
     def setUp(self):
-        cache.clear()
+        utils.cache_clear()
         self.user = utils.create_user()
         self.category = utils.create_category()
         self.topic = utils.create_topic(category=self.category, user=self.user)
