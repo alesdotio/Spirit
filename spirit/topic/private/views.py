@@ -175,6 +175,7 @@ def join_in(request, topic_id):
 def index(request):
     topics = Topic.objects\
         .with_bookmarks(user=request.user)\
+        .select_related('user', 'user__st', 'last_commenter', 'last_commenter__st')\
         .filter(topics_private__user=request.user)
 
     topics = yt_paginate(
@@ -194,6 +195,7 @@ def index_author(request):
     # TODO: show all, show join link in those the user is not participating
     # TODO: move to manager
     topics = Topic.objects\
+        .select_related('user', 'user__st', 'last_commenter', 'last_commenter__st')\
         .filter(user=request.user, category_id=settings.ST_TOPIC_PRIVATE_CATEGORY_PK)\
         .exclude(topics_private__user=request.user)
 

@@ -1,0 +1,16 @@
+{% extends "spirit/_base.html" %}
+
+{% load spirit_tags i18n %}
+
+{% block title %}{{ tag.name }}{% endblock %}
+
+{% block content %}
+	<div class="topic-tag-detail">
+		<h1 class="topic-tag-detail-name"><span class="topic-tag">{{ tag.slug }}</span>{{ tag.name }}</h1>
+		<p class="topic-tag-detail-description">{{ tag.description }}</p>
+	</div>
+
+	{% include "spirit/topic/_render_list.html" %}
+
+	{% render_paginator topics %}
+{% endblock %}

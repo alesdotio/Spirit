@@ -154,7 +154,8 @@ def topics(request, pk, slug):
         .with_bookmarks(user=request.user)\
         .filter(user_id=pk)\
         .order_by('-date', '-pk')\
-        .select_related('user__st')
+        .select_related('user', 'user__st', 'last_commenter', 'last_commenter__st')\
+        .prefetch_related('topictagrelation_set', 'topictagrelation_set__tag')
 
     return _activity(
         request, pk, slug,

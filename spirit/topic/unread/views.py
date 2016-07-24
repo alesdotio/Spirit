@@ -18,7 +18,9 @@ def index(request):
     topics = Topic.objects\
         .for_access(user=request.user)\
         .for_unread(user=request.user)\
-        .with_bookmarks(user=request.user)
+        .with_bookmarks(user=request.user)\
+        .select_related('user', 'user__st', 'last_commenter', 'last_commenter__st')\
+        .prefetch_related('topictagrelation_set', 'topictagrelation_set__tag')
 
     page = paginate(request, query_set=topics, lookup_field="last_active", page_var='topic_id')
     next_page_pk = None

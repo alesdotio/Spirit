@@ -80,6 +80,7 @@ INSTALLED_APPS = [
     'spirit.topic.poll',  # todo: remove in Spirit v0.5
     'spirit.topic.private',
     'spirit.topic.unread',
+    'spirit.topic.tag',
 
     'spirit.comment',
     'spirit.comment.bookmark',

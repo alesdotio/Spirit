@@ -121,7 +121,8 @@ def index_active(request):
         .global_()\
         .with_bookmarks(user=request.user)\
         .order_by('-is_globally_pinned', '-last_active')\
-        .select_related('category', 'user', 'user__st')
+        .select_related('category', 'user', 'user__st', 'last_commenter', 'last_commenter__st')\
+        .prefetch_related('topictagrelation_set', 'topictagrelation_set__tag')
 
     topics = yt_paginate(
         topics,

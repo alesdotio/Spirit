@@ -10,6 +10,7 @@ import spirit.topic.notification.urls
 import spirit.topic.favorite.urls
 import spirit.topic.private.urls
 import spirit.topic.poll.urls
+import spirit.topic.tag.urls
 from . import views
 
 
@@ -30,4 +31,5 @@ urlpatterns = [
     url(r'^favorite/', include(spirit.topic.favorite.urls, namespace='favorite')),
     url(r'^private/', include(spirit.topic.private.urls, namespace='private')),
     url(r'^poll/', include(spirit.topic.poll.urls, namespace='poll')),  # todo: remove me!
+    url(r'^tag/', include(spirit.topic.tag.urls, namespace='tag')),
 ]

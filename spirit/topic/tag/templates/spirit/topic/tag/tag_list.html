@@ -1,0 +1,21 @@
+{% extends "spirit/_base.html" %}
+
+{% load spirit_tags i18n %}
+
+{% block title %}{% trans "Tag list" %}{% endblock %}
+
+{% block content %}
+	<h1>{% trans "List of topic tags" %}</h1>
+	<p>{% trans "Click on a tag to view topics with this tag." %}</p>
+
+	<a href="{% url 'spirit:topic:tag:pinned' %}" class="topic-tag-detail">
+		<h3 class="topic-tag-detail-name"><span class="topic-tag">{{ pinned_slug }}</span>{{ pinned_name }}</h3>
+		<p class="topic-tag-detail-description">{{ pinned_description }}</p>
+	</a>
+	{% for tag in object_list %}
+		<a href="{% url 'spirit:topic:tag:detail' tag.slug %}" class="topic-tag-detail">
+			<h3 class="topic-tag-detail-name"><span class="topic-tag">{{ tag.slug }}</span>{{ tag.name }}</h3>
+			<p class="topic-tag-detail-description">{{ tag.description }}</p>
+		</a>
+	{% endfor %}
+{% endblock %}

@@ -30,7 +30,8 @@ def detail(request, pk, slug):
         .with_bookmarks(user=request.user)\
         .for_category(category=category)\
         .order_by('-is_globally_pinned', '-is_pinned', '-last_active')\
-        .select_related('category')
+        .select_related('category', 'last_commenter', 'last_commenter__st')\
+        .prefetch_related('topictagrelation_set', 'topictagrelation_set__tag')
 
     topics = yt_paginate(
         topics,
