@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 from django.db import models
 from django.db.models import Q
+from django.conf import settings
 
 
 class TopicNotificationQuerySet(models.QuerySet):
@@ -15,6 +16,12 @@ class TopicNotificationQuerySet(models.QuerySet):
 
     def unread(self):
         return self.filter(is_read=False)
+
+    def public(self):
+        return self.exclude(topic__category_id=settings.ST_TOPIC_PRIVATE_CATEGORY_PK)
+
+    def private(self):
+        return self.filter(topic__category_id=settings.ST_TOPIC_PRIVATE_CATEGORY_PK)
 
     def _access(self, user):
         return self.filter(Q(topic__category__is_private=False) | Q(topic__topics_private__user=user),

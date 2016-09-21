@@ -76,11 +76,24 @@ def index_ajax(request):
     return HttpResponse(json.dumps({'n': notifications, }), content_type="application/json")
 
 
+@require_POST
+@login_required
+def mark_all_read(request):
+    count = TopicNotification.objects\
+        .for_access(request.user)\
+        .unread()\
+        .public()\
+        .update(is_read=True)
+    messages.success(request, 'Marked %s notifications as read' % count)
+    return redirect('spirit:topic:notification:index')
+
+
 @login_required
 def index_unread(request):
     notifications = TopicNotification.objects\
         .for_access(request.user)\
-        .filter(is_read=False)
+        .unread()\
+        .public()
 
     page = paginate(
         request,
@@ -104,8 +117,13 @@ def index_unread(request):
 
 @login_required
 def index(request):
+    notifications = TopicNotification.objects\
+        .for_access(request.user)\
+        .public()\
+        .select_related('topic', 'comment__user', 'comment__user__st')
+
     notifications = yt_paginate(
-        TopicNotification.objects.for_access(request.user),
+        notifications,
         per_page=config.topics_per_page,
         page_number=request.GET.get('page', 1)
     )

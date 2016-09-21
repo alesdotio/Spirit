@@ -10,6 +10,7 @@ from . import views
 urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(r'^unread/$', views.index_unread, name='index-unread'),
+    url(r'^mark-all-read/$', views.mark_all_read, name='mark-all-read'),
     url(r'^ajax/$', views.index_ajax, name='index-ajax'),
     url(r'^(?P<topic_id>\d+)/create/$', views.create, name='create'),
     url(r'^(?P<pk>\d+)/update/$', views.update, name='update'),
