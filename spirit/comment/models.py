@@ -114,7 +114,10 @@ post_save.connect(increase_user_profile_comment_count, sender=Comment, dispatch_
 
 def decrease_user_profile_comment_count(sender, instance, **kwargs):
     if not instance.topic.category.is_private:
-        instance.user.st.decrease_comment_count()
+        try:
+            instance.user.st.decrease_comment_count()
+        except models.ObjectDoesNotExist:
+            pass  # deleting the user
 
 post_delete.connect(decrease_user_profile_comment_count, sender=Comment, dispatch_uid='Comment:decrease_user_profile_comment_count')
 
