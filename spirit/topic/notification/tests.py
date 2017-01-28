@@ -68,13 +68,16 @@ class TopicNotificationViewTest(TestCase):
 
     def test_topic_notification_list_show_private_topic(self):
         """
-        topic private in notification list
+        private topics do not go into notifications
         """
         TopicNotification.objects.all().delete()
 
-        topic_a = utils.create_private_topic(user=self.user)
-        topic_notif = TopicNotification.objects.create(user=self.user, topic=topic_a.topic,
+        topic_a = utils.create_topic(category=self.category, user=self.user)
+        topic_notif = TopicNotification.objects.create(user=self.user, topic=topic_a,
                                                        comment=self.comment, is_active=True, action=COMMENT)
+        private_topic_a = utils.create_private_topic(user=self.user)
+        private_topic_notif = TopicNotification.objects.create(user=self.user, topic=private_topic_a.topic,
+                                                               comment=self.comment, is_active=True, action=COMMENT)
 
         utils.login(self)
         response = self.client.get(reverse('spirit:topic:notification:index'))
