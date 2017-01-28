@@ -22,6 +22,7 @@ from ..comment.bookmark.models import CommentBookmark
 from .utils.tokens import UserActivationTokenGenerator, UserEmailChangeTokenGenerator
 from .utils.email import send_activation_email, send_email_change_email, sender
 from .utils import email
+from . import middleware
 
 User = get_user_model()
 
@@ -110,8 +111,9 @@ class UserViewTest(TestCase):
         topic = utils.create_topic(self.category, user=self.user2)
 
         utils.login(self)
-        response = self.client.get(reverse("spirit:user:topics", kwargs={'pk': self.user2.pk,
-                                                                            'slug': self.user2.st.slug}))
+        response = self.client.get(reverse(
+            "spirit:user:topics",
+            kwargs={'pk': self.user2.pk, 'slug': self.user2.st.slug}))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(list(response.context['topics']), [topic, ])
 
@@ -132,8 +134,9 @@ class UserViewTest(TestCase):
         utils.create_topic(category=subcategory_removed, user=self.user2)
 
         utils.login(self)
-        response = self.client.get(reverse("spirit:user:topics", kwargs={'pk': self.user2.pk,
-                                                                            'slug': self.user2.st.slug}))
+        response = self.client.get(reverse(
+            "spirit:user:topics",
+            kwargs={'pk': self.user2.pk, 'slug': self.user2.st.slug}))
         self.assertEqual(list(response.context['topics']), [])
 
     def test_profile_topics_invalid_slug(self):
@@ -141,10 +144,12 @@ class UserViewTest(TestCase):
         profile user's topics
         """
         utils.login(self)
-        response = self.client.get(reverse("spirit:user:topics", kwargs={'pk': self.user2.pk,
-                                                                            'slug': "invalid"}))
-        expected_url = reverse("spirit:user:topics", kwargs={'pk': self.user2.pk,
-                                                                'slug': self.user2.st.slug})
+        response = self.client.get(reverse(
+            "spirit:user:topics",
+            kwargs={'pk': self.user2.pk, 'slug': "invalid"}))
+        expected_url = reverse(
+            "spirit:user:topics",
+            kwargs={'pk': self.user2.pk, 'slug': self.user2.st.slug})
         self.assertRedirects(response, expected_url, status_code=301)
 
     def test_profile_comments(self):
@@ -154,8 +159,9 @@ class UserViewTest(TestCase):
         utils.login(self)
         comment = utils.create_comment(user=self.user2, topic=self.topic)
         utils.create_comment(user=self.user, topic=self.topic)
-        response = self.client.get(reverse("spirit:user:detail", kwargs={'pk': self.user2.pk,
-                                                                            'slug': self.user2.st.slug}))
+        response = self.client.get(reverse(
+            "spirit:user:detail",
+            kwargs={'pk': self.user2.pk, 'slug': self.user2.st.slug}))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(list(response.context['comments']), [comment, ])
         self.assertEqual(response.context['p_user'], self.user2)
@@ -172,8 +178,9 @@ class UserViewTest(TestCase):
         Comment.objects.filter(pk=comment_c.pk).update(date=timezone.now() - datetime.timedelta(days=5))
 
         utils.login(self)
-        response = self.client.get(reverse("spirit:user:detail", kwargs={'pk': self.user2.pk,
-                                                                            'slug': self.user2.st.slug}))
+        response = self.client.get(reverse(
+            "spirit:user:detail",
+            kwargs={'pk': self.user2.pk, 'slug': self.user2.st.slug}))
         self.assertEqual(list(response.context['comments']), [comment_b, comment_c, comment_a])
 
     @override_djconfig(comments_per_page=1)
@@ -185,8 +192,9 @@ class UserViewTest(TestCase):
         comment = utils.create_comment(user=self.user2, topic=self.topic)
 
         utils.login(self)
-        response = self.client.get(reverse("spirit:user:detail", kwargs={'pk': self.user2.pk,
-                                                                            'slug': self.user2.st.slug}))
+        response = self.client.get(reverse(
+            "spirit:user:detail",
+            kwargs={'pk': self.user2.pk, 'slug': self.user2.st.slug}))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(list(response.context['comments']), [comment, ])
 
@@ -210,8 +218,9 @@ class UserViewTest(TestCase):
         utils.create_comment(user=self.user2, topic=topic_e)
 
         utils.login(self)
-        response = self.client.get(reverse("spirit:user:detail", kwargs={'pk': self.user2.pk,
-                                                                            'slug': self.user2.st.slug}))
+        response = self.client.get(reverse(
+            "spirit:user:detail",
+            kwargs={'pk': self.user2.pk, 'slug': self.user2.st.slug}))
         self.assertEqual(list(response.context['comments']), [])
 
     def test_profile_comments_invalid_slug(self):
@@ -219,10 +228,12 @@ class UserViewTest(TestCase):
         profile user's comments, invalid user slug
         """
         utils.login(self)
-        response = self.client.get(reverse("spirit:user:detail", kwargs={'pk': self.user2.pk,
-                                                                            'slug': "invalid"}))
-        expected_url = reverse("spirit:user:detail", kwargs={'pk': self.user2.pk,
-                                                                'slug': self.user2.st.slug})
+        response = self.client.get(reverse(
+            "spirit:user:detail",
+            kwargs={'pk': self.user2.pk, 'slug': "invalid"}))
+        expected_url = reverse(
+            "spirit:user:detail",
+            kwargs={'pk': self.user2.pk, 'slug': self.user2.st.slug})
         self.assertRedirects(response, expected_url, status_code=301)
 
     def test_profile_likes(self):
@@ -234,8 +245,9 @@ class UserViewTest(TestCase):
         comment2 = utils.create_comment(user=self.user2, topic=self.topic)
         like = CommentLike.objects.create(user=self.user2, comment=comment)
         CommentLike.objects.create(user=self.user, comment=comment2)
-        response = self.client.get(reverse("spirit:user:likes", kwargs={'pk': self.user2.pk,
-                                                                           'slug': self.user2.st.slug}))
+        response = self.client.get(reverse(
+            "spirit:user:likes",
+            kwargs={'pk': self.user2.pk, 'slug': self.user2.st.slug}))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(list(response.context['comments']), [like.comment, ])
         self.assertEqual(response.context['p_user'], self.user2)
@@ -255,8 +267,9 @@ class UserViewTest(TestCase):
         CommentLike.objects.filter(pk=like_c.pk).update(date=timezone.now() - datetime.timedelta(days=5))
 
         utils.login(self)
-        response = self.client.get(reverse("spirit:user:likes", kwargs={'pk': self.user2.pk,
-                                                                           'slug': self.user2.st.slug}))
+        response = self.client.get(reverse(
+            "spirit:user:likes",
+            kwargs={'pk': self.user2.pk, 'slug': self.user2.st.slug}))
         self.assertEqual(list(response.context['comments']), [comment_b, comment_c, comment_a])
 
     def test_profile_likes_dont_show_removed_or_private(self):
@@ -284,8 +297,9 @@ class UserViewTest(TestCase):
         CommentLike.objects.create(user=self.user2, comment=comment_e)
 
         utils.login(self)
-        response = self.client.get(reverse("spirit:user:likes", kwargs={'pk': self.user2.pk,
-                                                                           'slug': self.user2.st.slug}))
+        response = self.client.get(reverse(
+            "spirit:user:likes",
+            kwargs={'pk': self.user2.pk, 'slug': self.user2.st.slug}))
         self.assertEqual(list(response.context['comments']), [])
 
     def test_profile_likes_invalid_slug(self):
@@ -293,10 +307,12 @@ class UserViewTest(TestCase):
         profile user's likes, invalid user slug
         """
         utils.login(self)
-        response = self.client.get(reverse("spirit:user:likes", kwargs={'pk': self.user2.pk,
-                                                                           'slug': "invalid"}))
-        expected_url = reverse("spirit:user:likes", kwargs={'pk': self.user2.pk,
-                                                               'slug': self.user2.st.slug})
+        response = self.client.get(reverse(
+            "spirit:user:likes",
+            kwargs={'pk': self.user2.pk, 'slug': "invalid"}))
+        expected_url = reverse(
+            "spirit:user:likes",
+            kwargs={'pk': self.user2.pk, 'slug': self.user2.st.slug})
         self.assertRedirects(response, expected_url, status_code=301)
 
     @override_djconfig(comments_per_page=1)
@@ -310,8 +326,9 @@ class UserViewTest(TestCase):
         like = CommentLike.objects.create(user=self.user2, comment=comment2)
 
         utils.login(self)
-        response = self.client.get(reverse("spirit:user:likes", kwargs={'pk': self.user2.pk,
-                                                                           'slug': self.user2.st.slug}))
+        response = self.client.get(reverse(
+            "spirit:user:likes",
+            kwargs={'pk': self.user2.pk, 'slug': self.user2.st.slug}))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(list(response.context['comments']), [like.comment, ])
 
@@ -455,6 +472,19 @@ class UserFormTest(TestCase):
 
         form = UserForm(data=form_data, instance=self.user)
         self.assertEqual(form.is_valid(), True)
+
+    def test_profile_timezone_field(self):
+        form_data = {
+            'first_name': 'foo', 'last_name': 'bar',
+            'location': 'spirit', 'timezone': 'UTC'}
+
+        form = UserProfileForm(data=form_data, instance=self.user.st)
+        self.assertEqual(form.is_valid(), True)
+
+        form_data['timezone'] = 'badtimezone'
+        form = UserProfileForm(data=form_data, instance=self.user.st)
+        self.assertEqual(form.is_valid(), False)
+        self.assertTrue('timezone' in form.errors)
 
     def test_email_change(self):
         """
@@ -692,10 +722,10 @@ class UtilsUserTests(TestCase):
             self.assertEqual(request, req)
             self.assertEqual(email, [self.user.email, ])
 
-            activation_token = UserActivationTokenGenerator()
-            token = activation_token.generate(self.user)
-            self.assertDictEqual(context, {'token': token, 'user_id': self.user.pk})
-
+            self.assertTrue(
+                UserActivationTokenGenerator().is_valid(
+                    self.user, context['token']))
+            self.assertEqual(context['user_id'], self.user.pk)
             self.assertEqual(subject, _("User activation"))
             self.assertEqual(template_name, 'spirit/user/activation_email.html')
 
@@ -827,3 +857,57 @@ class UtilsUserTests(TestCase):
 
         self.assertEquals(len(mail.outbox), 1)
         self.assertEquals(mail.outbox[0].from_email, "foo@bar.com")
+
+
+class UserMiddlewareTest(TestCase):
+
+    def setUp(self):
+        timezone.deactivate()
+        utils.cache_clear()
+        self.user = utils.create_user()
+
+    @override_settings(TIME_ZONE='UTC')
+    def test_timezone(self):
+        """
+        Should activate the user timezone
+        """
+        timezone.deactivate()
+        utils.login(self)
+        req = RequestFactory().get('/')
+        req.user = self.user
+        time_zone = 'America/Argentina/Buenos_Aires'
+        self.user.st.timezone = time_zone
+
+        self.assertEqual(timezone.get_current_timezone().zone, 'UTC')
+        middleware.TimezoneMiddleware().process_request(req)
+        self.assertEqual(timezone.get_current_timezone().zone, time_zone)
+
+    @override_settings(TIME_ZONE='UTC')
+    def test_timezone_bad_tz(self):
+        timezone.deactivate()
+        utils.login(self)
+        req = RequestFactory().get('/')
+        req.user = self.user
+        self.user.st.timezone = 'badtimezone'
+
+        time_zone = 'America/Argentina/Buenos_Aires'
+        timezone.activate(time_zone)
+        self.assertEqual(timezone.get_current_timezone().zone, time_zone)
+        middleware.TimezoneMiddleware().process_request(req)
+        self.assertEqual(timezone.get_current_timezone().zone, 'UTC')
+
+    @override_settings(TIME_ZONE='UTC')
+    def test_timezone_anonymous_user(self):
+        class AnonymUserMock(object):
+            def is_authenticated(self):
+                return False
+
+        timezone.deactivate()
+        req = RequestFactory().get('/')
+        req.user = AnonymUserMock()
+
+        time_zone = 'America/Argentina/Buenos_Aires'
+        timezone.activate(time_zone)
+        self.assertEqual(timezone.get_current_timezone().zone, time_zone)
+        middleware.TimezoneMiddleware().process_request(req)
+        self.assertEqual(timezone.get_current_timezone().zone, 'UTC')

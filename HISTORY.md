@@ -1,3 +1,12 @@
+0.5.0
+==================
+
+* Drops support for Python 3.3
+* Adds support for Django 1.9 and 1.10
+* Remove deprecated `topic_poll` app
+* Remove deprecated (since v0.2) `spirit_user.User` (PR #141),
+  read the wiki or the PR for a workaround
+
 0.4.8
 ==================
 
@@ -7,6 +16,17 @@
 * Improvement: Adds `ST_COMMENT_MAX_LEN` setting to change
   the maximum characters limit per comment (#107)
 * New: Adds optional category title color (#110 thanks to @sheepsy90)
+* Fix: `Too many submissions` when form submission has an error (#58)
+* New: Key based expiration rate-limit.
+* New: `ST_RATELIMIT_CACHE = 'st_rate_limit'` setting and `CACHE`.
+* Fix: Boolean filters for Elasticsearch (PR #130)
+* Improvement: UTC timezones instead of GMT in user profile form (#108)
+* Fix: missing emojis (#93)
+* Improvement: Replaced twitter emoji pack by emojiOne pack (PR #126)
+* Improvement: Search within comments (#57)
+* Improvement: Search-index partial update (PR #129)
+* Improvement: Support for YouTube embeds that have a
+  timestamp (PR #116 thanks to @alesdotio)
 
 0.4.7
 ==================

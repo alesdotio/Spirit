@@ -9,10 +9,14 @@ from django.utils import timezone
 from django.template import defaultfilters
 from django.conf import settings
 
+from ..core.utils.timezone import timezones
 from .models import UserProfile
 
 User = get_user_model()
+
 username_max_length = User._meta.get_field('username').max_length
+
+TIMEZONE_CHOICES = timezones()
 
 
 class CleanEmailMixin(object):
@@ -72,6 +76,8 @@ class UserForm(forms.ModelForm):
 
 
 class UserProfileForm(forms.ModelForm):
+
+    timezone = forms.ChoiceField(label=_("Time zone"), choices=TIMEZONE_CHOICES)
 
     class Meta:
         model = UserProfile

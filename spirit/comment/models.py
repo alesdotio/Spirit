@@ -120,4 +120,3 @@ def decrease_user_profile_comment_count(sender, instance, **kwargs):
             pass  # deleting the user
 
 post_delete.connect(decrease_user_profile_comment_count, sender=Comment, dispatch_uid='Comment:decrease_user_profile_comment_count')
-

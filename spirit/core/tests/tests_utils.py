@@ -24,7 +24,6 @@ from django.contrib.auth import get_user_model
 from ...category.models import Category
 from .. import utils
 from ..utils.forms import NestedModelChoiceField
-from ..utils.timezone import TIMEZONE_CHOICES
 from ..utils.decorators import moderator_required, administrator_required
 from ..tags import time as ttags_utils
 from . import utils as test_utils
@@ -206,7 +205,7 @@ class UtilsTemplateTagTests(TestCase):
                      '{% get_gplus_share_url url="/á/foo bar/" %}'
                      '{% get_email_share_url url="/á/foo bar/" title="á" %}'
                      '{% get_share_url url="/á/foo bar/" %}')
-        res = t.render(Context({'request': RequestFactory().get('/'), }))
+        res = t.render(Context({'request': RequestFactory().get('/'), }, autoescape=False))
         self.assertEqual(res.strip(), "http://www.facebook.com/sharer.php?s=100&p%5Burl%5D=http%3A%2F%2Ftestserver"
                                       "%2F%25C3%25A1%2Ffoo%2520bar%2F&p%5Btitle%5D=%C3%A1"
                                       "https://twitter.com/share?url=http%3A%2F%2Ftestserver%2F%25C3%25A1%2F"
@@ -250,18 +249,6 @@ class UtilsFormsTests(TestCase):
                                                        (category.pk, '%s' % category.title),
                                                        (subcategory.pk, '--- %s' % subcategory.title),
                                                        (category2.pk, '%s' % category2.title)])
-
-
-class UtilsTimezoneTests(TestCase):
-
-    def test_timezone(self):
-        """
-        Timezones, requires pytz
-        """
-        for tz, text in TIMEZONE_CHOICES:
-            timezone.activate(tz)
-
-        self.assertRaises(Exception, timezone.activate, "badtimezone")
 
 
 class UtilsDecoratorsTests(TestCase):

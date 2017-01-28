@@ -18,6 +18,6 @@ class GravatarTemplateTagTests(TestCase):
         """
         out = Template(
             "{% load spirit_tags %}"
-            "{% get_avatar_url user 21 %}"
-        ).render(Context({'user': self.user, }))
+            "{% get_gravatar_url user 21 %}"
+        ).render(Context({'user': self.user, }, autoescape=False))
         self.assertEqual(out, "https://www.gravatar.com/avatar/472860d1aad501ba9795fb31e94ad42f?d=identicon&s=21&r=g")

@@ -40,6 +40,9 @@ ST_UNICODE_SLUGS = True
 ST_UNIQUE_EMAILS = True
 ST_CASE_INSENSITIVE_EMAILS = True
 
+# Tests helpers
+ST_TESTS_RATELIMIT_NEVER_EXPIRE = False
+
 ST_BASE_DIR = os.path.dirname(__file__)
 
 ST_INVALID_USERNAMES = []
@@ -77,7 +80,7 @@ INSTALLED_APPS = [
     'spirit.topic.favorite',
     'spirit.topic.moderate',
     'spirit.topic.notification',
-    'spirit.topic.poll',  # todo: remove in Spirit v0.5
+    'spirit.topic.poll',  # todo: remove in Spirit v0.6
     'spirit.topic.private',
     'spirit.topic.unread',
     'spirit.topic.tag',
@@ -180,7 +183,7 @@ INSTALLED_APPS += [
 HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
-        'PATH': os.path.join(os.path.dirname(__file__), 'search/whoosh_index'),
+        'PATH': os.path.join(os.path.dirname(__file__), 'search', 'whoosh_index'),
     },
 }
 

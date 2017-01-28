@@ -17,7 +17,17 @@ from ..core.utils.models import AutoSlugField
 
 @python_2_unicode_compatible
 class Topic(models.Model):
+    """
+    Topic model
 
+    :ivar last_active: Last time a comment was added/removed,\
+    it makes the search re-index the topic
+    :vartype last_active: `:py:class:models.DateTimeField`
+    :ivar reindex_at: Last time this model was marked\
+    for reindex. It makes the search re-index the topic,\
+    it must be set explicitly
+    :vartype reindex_at: `:py:class:models.DateTimeField`
+    """
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='st_topics')
     category = models.ForeignKey('spirit_category.Category', verbose_name=_("category"))
 
@@ -26,6 +36,7 @@ class Topic(models.Model):
     date = models.DateTimeField(_("date"), default=timezone.now)
     last_active = models.DateTimeField(_("last active"), default=timezone.now)
     last_commenter = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='st_topics_last', null=True, blank=True, on_delete=models.SET_NULL)
+    reindex_at = models.DateTimeField(_("reindex at"), default=timezone.now)
 
     is_pinned = models.BooleanField(_("pinned"), default=False)
     is_globally_pinned = models.BooleanField(_("globally pinned"), default=False)
@@ -110,6 +121,14 @@ class Topic(models.Model):
             .filter(pk=self.pk)\
             .update(comment_count=F('comment_count') - 1)
 
+    def get_all_comments_html(self):
+        """
+        For search indexing
+
+        :return: List of comments in HTML
+        """
+        return self.comment_set.values_list('comment_html', flat=True)
+
     def update_last_commenter(self):
         last_comment = self.comment_set.filter(is_removed=False).first()
         if last_comment and last_comment.user != self.last_commenter:
@@ -139,4 +158,3 @@ def decrease_user_profile_comment_count(sender, instance, **kwargs):
             pass  # deleting the user
 
 post_delete.connect(decrease_user_profile_comment_count, sender=Topic, dispatch_uid='Topic:decrease_user_profile_comment_count')
-

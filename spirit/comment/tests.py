@@ -44,6 +44,7 @@ class CommentViewTest(TestCase):
         self.category = utils.create_category()
         self.topic = utils.create_topic(category=self.category, user=self.user)
 
+    @override_settings(ST_TESTS_RATELIMIT_NEVER_EXPIRE=True)
     def test_comment_publish(self):
         """
         create comment
@@ -58,8 +59,8 @@ class CommentViewTest(TestCase):
         self.assertEqual(len(Comment.objects.all()), 1)
 
         # ratelimit
-        response = self.client.post(reverse('spirit:comment:publish', kwargs={'topic_id': self.topic.pk, }),
-                                    form_data)
+        self.client.post(
+            reverse('spirit:comment:publish', kwargs={'topic_id': self.topic.pk, }), form_data)
         self.assertEqual(len(Comment.objects.all()), 1)
 
         # get
@@ -416,6 +417,7 @@ class CommentViewTest(TestCase):
         expected_url = comment.topic.get_absolute_url() + "#c1"
         self.assertRedirects(response, expected_url, status_code=302)
 
+    @override_settings(MEDIA_ROOT=os.path.join(settings.BASE_DIR, 'media_test'))
     def test_comment_image_upload(self):
         """
         comment image upload

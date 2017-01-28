@@ -107,6 +107,7 @@ class UserViewTest(TestCase):
         response = self.client.post(reverse('spirit:user:auth:register'), {})
         self.assertIsInstance(response.context['form'], CustomRegisterForm)
 
+    @override_settings(ST_TESTS_RATELIMIT_NEVER_EXPIRE=True)
     def test_login_rate_limit(self):
         """
         test rate limit 5/5m
@@ -122,6 +123,7 @@ class UserViewTest(TestCase):
         response = self.client.post(url, form_data)
         self.assertRedirects(response, url, status_code=302)
 
+    @override_settings(ST_TESTS_RATELIMIT_NEVER_EXPIRE=True)
     def test_custom_reset_password(self):
         """
         test rate limit 5/5m
