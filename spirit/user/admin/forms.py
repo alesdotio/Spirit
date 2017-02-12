@@ -25,3 +25,10 @@ class UserProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
         fields = ("title", "location", "timezone", "is_verified", "is_administrator", "is_moderator")
+
+
+class UserSuspendForm(forms.ModelForm):
+
+    class Meta:
+        model = UserProfile
+        fields = ("is_suspended_until", "suspension_reason")

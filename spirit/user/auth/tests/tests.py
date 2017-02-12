@@ -2,10 +2,12 @@
 
 from __future__ import unicode_literals
 
+import datetime
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 from django.contrib.auth import get_user_model
 from django.core import mail
+from django.utils import timezone
 from django.utils.translation import ugettext as _
 from django.test.utils import override_settings
 from django.core.urlresolvers import NoReverseMatch
@@ -298,6 +300,27 @@ class UserViewTest(TestCase):
         # next if user is anonymous
         response = self.client.get(reverse('spirit:user:auth:logout') + '?next=/fakepath/')
         self.assertRedirects(response, '/fakepath/', status_code=302, target_status_code=404)
+
+    def test_is_suspended_until(self):
+        self.user.st.is_suspended_until = timezone.now() + datetime.timedelta(days=1)
+        self.user.st.save()
+
+        # try to login
+        form_data = {'username': self.user.email, 'password': "bar"}
+        response = self.client.post(reverse('spirit:user:auth:login'), form_data)
+        self.assertEqual(response.status_code, 302)
+
+        # we were actually logged out immediately after
+        response = self.client.get(reverse('spirit:user:update'))
+        self.assertRedirects(response, '%s?next=%s' % (reverse('spirit:user:auth:login'), reverse('spirit:user:update')), status_code=302)
+
+        # not suspended any more
+        self.user.st.is_suspended_until = timezone.now()
+        self.user.st.save()
+        response = self.client.post(reverse('spirit:user:auth:login'), form_data)
+        self.assertRedirects(response, reverse("spirit:user:update"), status_code=302)
+        response = self.client.get(reverse('spirit:user:update'))
+        self.assertEqual(response.status_code, 200)
 
 
 class UserFormTest(TestCase):

@@ -1,0 +1,15 @@
+{% extends "spirit/_base.html" %}
+
+{% load i18n %}
+
+{% block title %}{% trans "Suspended Users" %}{% endblock %}
+
+{% block content %}
+
+    {% include "spirit/admin/_side_menu.html" with active="users" %}
+
+    <h1 class="headline">{% trans "Temporarily suspended Users" %}</h1>
+
+    {% include "spirit/user/admin/_list.html" with active_tab="suspended" %}
+
+{% endblock %}

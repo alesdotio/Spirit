@@ -67,6 +67,8 @@ class UserProfile(models.Model):
     last_post_on = models.DateTimeField(_("last post on"), null=True, blank=True)
 
     last_username_change_date = models.DateTimeField(blank=True, null=True)
+    is_suspended_until = models.DateField(_('suspended until'), null=True, blank=True, help_text=_('If set, the account will be disabled until this date.'))
+    suspension_reason = models.TextField(_('suspension reason'), null=True, blank=True, help_text=_('The reason for the suspension, visible to the user.'))
 
     class Meta:
         verbose_name = _("forum profile")
@@ -96,6 +98,12 @@ class UserProfile(models.Model):
     @property
     def is_online(self):
         return self.last_seen > timezone.now() - datetime.timedelta(minutes=5)
+
+    @property
+    def is_suspended(self):
+        if self.is_suspended_until and self.is_suspended_until > timezone.now().date():
+            return True
+        return False
 
     def increase_comment_count(self):
         UserProfile.objects.filter(pk=self.pk).update(comment_count=F('comment_count') + 1)

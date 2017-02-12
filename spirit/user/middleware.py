@@ -6,8 +6,10 @@ import logging
 import pytz
 
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth import logout
 from django.utils import timezone
+from django.utils.translation import ugettext_lazy as _
 
 try:
     from django.utils.deprecation import MiddlewareMixin
@@ -81,4 +83,10 @@ class ActiveUserMiddleware(MiddlewareMixin):
             return
 
         if not request.user.is_active:
+            messages.warning(request, _('Your account has been permanently suspended!'))
             logout(request)
+            return
+        elif request.user.st.is_suspended_until and request.user.st.is_suspended_until > timezone.now().date():
+            messages.warning(request, _('Your account has been suspended until %s! Reason: %s' % (request.user.st.is_suspended_until, request.user.st.suspension_reason)))
+            logout(request)
+            return

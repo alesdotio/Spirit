@@ -5,13 +5,14 @@ from __future__ import unicode_literals
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import get_user_model
 from django.contrib import messages
+from django.utils import timezone
 from django.utils.translation import ugettext as _
 
 from djconfig import config
 
 from ...core.utils.paginator import yt_paginate
-from ...core.utils.decorators import administrator_required
-from .forms import UserForm, UserProfileForm
+from ...core.utils.decorators import administrator_required, moderator_required
+from .forms import UserForm, UserProfileForm, UserSuspendForm
 
 User = get_user_model()
 
@@ -39,6 +40,28 @@ def edit(request, user_id):
     }
 
     return render(request, 'spirit/user/admin/edit.html', context)
+
+
+@moderator_required
+def suspend(request, user_id):
+    user = get_object_or_404(User, pk=user_id)
+
+    if request.method == 'POST':
+        form = UserSuspendForm(data=request.POST, instance=user.st)
+
+        if form.is_valid():
+            form.save()
+            messages.info(request, _("User suspension has been updated!"))
+            return redirect(request.GET.get("next", request.get_full_path()))
+    else:
+        form = UserSuspendForm(instance=user.st)
+
+    context = {
+        'form': form,
+        'p_user': user
+    }
+
+    return render(request, 'spirit/user/admin/suspend.html', context)
 
 
 @administrator_required
@@ -81,4 +104,12 @@ def index_unactive(request):
         request,
         queryset=User.objects.filter(is_active=False),
         template='spirit/user/admin/unactive.html'
+    )
+
+
+def index_suspended(request):
+    return _index(
+        request,
+        queryset=User.objects.filter(is_active=True, st__is_suspended_until__gt=timezone.now().today()),
+        template='spirit/user/admin/suspended.html'
     )

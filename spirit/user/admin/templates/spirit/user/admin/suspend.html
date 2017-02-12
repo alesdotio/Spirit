@@ -1,0 +1,20 @@
+{% extends "spirit/_base.html" %}
+
+{% load spirit_tags i18n tz %}
+
+{% block title %}{% trans "Suspend" %} {{ p_user.username }}{% endblock %}
+
+{% block content %}
+
+	{% include "spirit/user/_profile_info.html" %}
+
+	<h1 class="headline">{% trans "Suspending user" %}</h1>
+
+	<form action="." method="post">
+		{% csrf_token %}
+		{% include "spirit/_form.html" %}
+
+		<input class="button" type="submit" name="post" value="{% trans "Suspend" %}" />
+	</form>
+
+{% endblock %}

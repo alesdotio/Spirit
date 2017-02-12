@@ -1,34 +1,6 @@
 {% load spirit_tags i18n %}
 
-
-    <div class="profile-img">
-		<img class="profile-avatar" src="{% get_avatar_url user=p_user size=200 %}" />
-		<div class="profile-username">{{ p_user.username }}</div>
-	</div>
-
-    <div class="profile-info">
-		<ul class="profile-track">
-			<li>
-				<div class="profile-title">{% trans "Joined at" %}</div>
-				<div class="profile-date">{{ p_user.date_joined|shortnaturaltime }}</div>
-			</li><!--
-		 --><li>
-				<div class="profile-title">{% trans "Seen" %}</div>
-				<div class="profile-date">{{ p_user.st.last_seen|shortnaturaltime }}</div>
-			</li><!--
-		 --><li>
-				<div class="profile-title">{% trans "Likes received" %}</div>
-				<div class="profile-date">{{ p_user.st.received_likes_count }}</div>
-			</li>
-
-            {% if user.st.is_administrator %}
-                <li>
-                    <div class="profile-title">{% trans "Last IP" %}</div>
-                    <div class="profile-date">{{ p_user.st.last_ip }}</div>
-                </li>
-            {% endif %}
-		</ul>
-	</div>
+	{% include 'spirit/user/_profile_info.html' %}
 
     {% ifequal user.username p_user.username %}
         <div class="profile-preferences">
@@ -43,6 +15,12 @@
     {% if user.st.is_administrator %}
         <div class="profile-preferences">
             <a class="button" href="{% url "spirit:admin:user:edit" user_id=p_user.pk %}"><i class="fa fa-cog"></i> {% trans "Edit user" %}</a>
+        </div>
+    {% endif %}
+
+    {% if user.st.is_moderator %}
+        <div class="profile-preferences">
+            <a class="button" href="{% url "spirit:admin:user:suspend" user_id=p_user.pk %}"><i class="fa fa-ban"></i> {% trans "Suspend user" %}</a>
         </div>
     {% endif %}
 

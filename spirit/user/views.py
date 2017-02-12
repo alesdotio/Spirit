@@ -220,7 +220,7 @@ def likes_received(request, pk, slug):
 
 
 def user_list(request):
-    users = User.objects.filter(is_active=True).order_by('date_joined').select_related('st')
+    users = User.objects.filter(is_active=True).order_by('-st__is_administrator', '-st__is_moderator', 'date_joined').select_related('st')
     search = request.GET.get('search', '')
     if search:
         users = users.filter(username__icontains=search).select_related('st')
