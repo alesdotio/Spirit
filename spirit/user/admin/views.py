@@ -46,6 +46,10 @@ def edit(request, user_id):
 def suspend(request, user_id):
     user = get_object_or_404(User, pk=user_id)
 
+    if user.is_superuser or user.is_staff or user.st.is_administrator or user.st.is_moderator:
+        messages.error(request, _("You cannot suspend another administrator or moderator!"))
+        return redirect(user.st.get_absolute_url())
+
     if request.method == 'POST':
         form = UserSuspendForm(data=request.POST, instance=user.st)
 
