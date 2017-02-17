@@ -45,7 +45,7 @@ class UserProfile(models.Model):
 
     slug = AutoSlugField(populate_from="user.username", db_index=False, blank=True)
     location = models.CharField(_("location"), max_length=75, blank=True)
-    last_seen = models.DateTimeField(_("last seen"), auto_now=True)
+    last_seen = models.DateTimeField(_("last seen"), auto_now_add=True)
     last_ip = models.GenericIPAddressField(_("last ip"), blank=True, null=True)
     timezone = models.CharField(_("time zone"), max_length=32, default='UTC')
     is_administrator = models.BooleanField(_('administrator status'), default=False)
