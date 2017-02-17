@@ -96,6 +96,7 @@ def detail(request, pk, slug):
         .for_topic(topic=topic)\
         .with_likes(user=request.user)\
         .with_polls(user=request.user)\
+        .prefetch_related(*settings.ST_COMMENTS_PREFETCH_RELATED)\
         .order_by('date')
 
     comments = paginate(

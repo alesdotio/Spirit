@@ -154,7 +154,7 @@ def topics(request, pk, slug):
         .with_bookmarks(user=request.user)\
         .filter(user_id=pk)\
         .order_by('-date', '-pk')\
-        .select_related('user', 'user__st', 'last_commenter', 'last_commenter__st')\
+        .select_related('user', 'user__st', 'last_commenter', 'last_commenter__st', 'category')\
         .prefetch_related('topictagrelation_set', 'topictagrelation_set__tag')
 
     return _activity(
@@ -172,7 +172,8 @@ def comments(request, pk, slug):
     user_comments = Comment.objects\
         .filter(user_id=pk)\
         .visible(request.user)\
-        .with_polls(user=request.user)
+        .with_polls(user=request.user)\
+        .prefetch_related(*settings.ST_COMMENTS_PREFETCH_RELATED)
 
     return _activity(
         request, pk, slug,
@@ -190,7 +191,8 @@ def likes(request, pk, slug):
         .filter(comment_likes__user_id=pk)\
         .visible(request.user)\
         .with_polls(user=request.user)\
-        .order_by('-comment_likes__date', '-pk')
+        .order_by('-comment_likes__date', '-pk')\
+        .prefetch_related(*settings.ST_COMMENTS_PREFETCH_RELATED)
 
     return _activity(
         request, pk, slug,
@@ -207,6 +209,7 @@ def likes_received(request, pk, slug):
         .filter(user_id=pk, likes_count__gt=0)\
         .visible(request.user)\
         .with_polls(user=request.user)\
+        .prefetch_related(*settings.ST_COMMENTS_PREFETCH_RELATED)\
         .order_by('-likes_count', '-pk')
 
     return _activity(
