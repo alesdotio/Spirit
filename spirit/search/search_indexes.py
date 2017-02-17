@@ -48,7 +48,7 @@ class TopicIndex(indexes.SearchIndex, indexes.Indexable):
     # Overridden
     def index_queryset(self, using=None):
         return (self.get_model().objects
-                .all()
+                .visible()
                 .exclude(category_id=settings.ST_TOPIC_PRIVATE_CATEGORY_PK)
                 .select_related('category__parent'))
 
