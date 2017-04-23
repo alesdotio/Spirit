@@ -11,10 +11,10 @@
 				<div class="profile-title">{% trans "Joined at" %}</div>
 				<div class="profile-date">{{ p_user.date_joined|shortnaturaltime }}</div>
 			</li><!--
-		 --><li>
+		 -->{% if not p_user.st.hide_last_seen %}<li>
 				<div class="profile-title">{% trans "Seen" %}</div>
 				<div class="profile-date">{{ p_user.st.last_seen|shortnaturaltime }}</div>
-			</li><!--
+			</li>{% endif %}<!--
 		 --><li>
 				<div class="profile-title">{% trans "Likes received" %}</div>
 				<div class="profile-date">{{ p_user.st.received_likes_count }}</div>
