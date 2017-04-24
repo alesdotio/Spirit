@@ -59,6 +59,8 @@ class UserProfile(models.Model):
     avatar = models.ImageField(_("avatar"), blank=True, null=True, upload_to=UploadToHandler('avatars', 'pk'))
     avatar_chosen = models.CharField(_("use avatar from"), max_length=32, choices=AVATAR_CHOICES, default=AVATAR_CHOICES[0][0])
     avatar_cached_url = models.CharField(max_length=255, blank=True, null=True)
+    avatar_flair = models.CharField(_("avatar flair"), max_length=128, blank=True)
+    user_title = models.CharField(_("user title"), max_length=128, blank=True)  # the user can choose this title
 
     topic_count = models.PositiveIntegerField(_("topic count"), default=0)
     comment_count = models.PositiveIntegerField(_("comment count"), default=0)
