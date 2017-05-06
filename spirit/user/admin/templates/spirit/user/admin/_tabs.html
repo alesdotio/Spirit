@@ -5,5 +5,7 @@
  --><li><a class="tab-link{% ifequal active_tab "admins" %} is-selected{% endifequal %}" href="{% url "spirit:admin:user:index-admins" %}" >{% trans "Admins" %}</a></li><!--
  --><li><a class="tab-link{% ifequal active_tab "mods" %} is-selected{% endifequal %}" href="{% url "spirit:admin:user:index-mods" %}" >{% trans "Mods" %}</a></li><!--
  --><li><a class="tab-link{% ifequal active_tab "unactive" %} is-selected{% endifequal %}" href="{% url "spirit:admin:user:index-unactive" %}" >{% trans "Unactive" %}</a></li><!--
- --><li><a class="tab-link{% ifequal active_tab "suspended" %} is-selected{% endifequal %}" href="{% url "spirit:admin:user:index-suspended" %}" >{% trans "Suspended" %}</a></li>
+ --><li><a class="tab-link{% ifequal active_tab "unactive" %} is-selected{% endifequal %}" href="{% url "spirit:admin:user:index-unactive" %}" >{% trans "Unactive" %}</a></li><!--
+ --><li><a class="tab-link{% ifequal active_tab "suspended" %} is-selected{% endifequal %}" href="{% url "spirit:admin:user:index-suspended" %}" >{% trans "Suspended" %}</a></li><!--
+ --><li><a class="tab-link{% ifequal active_tab "suspensionlog" %} is-selected{% endifequal %}" href="{% url "spirit:admin:user:index-suspensionlog" %}" >{% trans "Suspension log" %}</a></li>
 </ul>

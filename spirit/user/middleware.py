@@ -86,7 +86,7 @@ class ActiveUserMiddleware(MiddlewareMixin):
             messages.warning(request, _('Your account has been permanently suspended!'))
             logout(request)
             return
-        elif request.user.st.is_suspended_until and request.user.st.is_suspended_until > timezone.now().date():
+        elif request.user.st.is_suspended_until and request.user.st.is_suspended_until > timezone.now():
             messages.warning(request, _('Your account has been suspended until %s! Reason: %s' % (request.user.st.is_suspended_until, request.user.st.suspension_reason)))
             logout(request)
             return

@@ -71,7 +71,7 @@ class UserProfile(models.Model):
     last_post_on = models.DateTimeField(_("last post on"), null=True, blank=True)
 
     last_username_change_date = models.DateTimeField(blank=True, null=True)
-    is_suspended_until = models.DateField(_('suspended until'), null=True, blank=True, help_text=_('If set, the account will be disabled until this date.'))
+    is_suspended_until = models.DateTimeField(_('suspended until'), null=True, blank=True, help_text=_('If set, the account will be disabled until this date.'))
     suspension_reason = models.TextField(_('suspension reason'), null=True, blank=True, help_text=_('The reason for the suspension, visible to the user.'))
 
     class Meta:
@@ -147,3 +147,27 @@ class UserProfile(models.Model):
                     .update(
                         last_post_hash=post_hash,
                         last_post_on=timezone.now()))
+
+
+class UserSuspensionLog(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='suspensions')
+    date_created = models.DateTimeField(auto_now_add=True)
+    suspended_by = models.ForeignKey(settings.AUTH_USER_MODEL)
+    suspended_until = models.DateTimeField(null=True, blank=True)
+    suspension_reason = models.TextField(null=True, blank=True)
+
+    class Meta:
+        ordering = ('-date_created', )
+
+    def __unicode__(self):
+        if self.suspended_until:
+            return _('%(user)s was suspended by %(suspended_by)s until %(suspended_until)s') % {
+                'user': self.user.username,
+                'suspended_by': self.suspended_by.username,
+                'suspended_until': self.suspended_until,
+            }
+        else:
+            return _('%(user)s suspension was lifted by %(suspended_by)s') % {
+                'user': self.user.username,
+                'suspended_by': self.suspended_by.username,
+            }

@@ -17,4 +17,13 @@
 		<input class="button" type="submit" name="post" value="{% trans "Suspend" %}" />
 	</form>
 
+	<h1 class="headline">{% trans "Previous suspensions" %}</h1>
+	<ul>
+		{% for log in p_user.suspensions.all %}
+			<li>{{ log.date_created }} - {{ log }}</li>
+		{% empty %}
+			<li>{% trans 'No previous suspensions' %}</li>
+		{% endfor %}
+	</ul>
+
 {% endblock %}

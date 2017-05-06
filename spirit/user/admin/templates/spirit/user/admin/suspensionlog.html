@@ -1,0 +1,23 @@
+{% extends "spirit/_base.html" %}
+
+{% load i18n spirit_tags %}
+
+{% block title %}{% trans "Suspension logs" %}{% endblock %}
+
+{% block content %}
+
+	{% include "spirit/admin/_side_menu.html" with active="suspensionlog" %}
+
+	<h1 class="headline">{% trans "Suspension logs" %}</h1>
+
+	<ul>
+		{% for log in suspensionlogs %}
+			<li>{{ log.date_created }} - {{ log }}</li>
+		{% empty %}
+			<li>{% trans 'No previous suspensions' %}</li>
+		{% endfor %}
+	</ul>
+
+	{% render_paginator suspensionlogs %}
+
+{% endblock %}

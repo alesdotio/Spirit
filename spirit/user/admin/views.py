@@ -10,6 +10,7 @@ from django.utils.translation import ugettext as _
 
 from djconfig import config
 
+from spirit.user.models import UserSuspensionLog
 from ...core.utils.paginator import yt_paginate
 from ...core.utils.decorators import administrator_required, moderator_required
 from .forms import UserForm, UserProfileForm, UserSuspendForm
@@ -55,6 +56,12 @@ def suspend(request, user_id):
 
         if form.is_valid():
             form.save()
+            UserSuspensionLog.objects.create(
+                user=user,
+                suspended_by=request.user,
+                suspended_until=form.cleaned_data['is_suspended_until'],
+                suspension_reason=form.cleaned_data['suspension_reason'],
+            )
             messages.info(request, _("User suspension has been updated!"))
             return redirect(request.GET.get("next", request.get_full_path()))
     else:
@@ -117,3 +124,14 @@ def index_suspended(request):
         queryset=User.objects.filter(is_active=True, st__is_suspended_until__gt=timezone.now().today()),
         template='spirit/user/admin/suspended.html'
     )
+
+
+@moderator_required
+def index_suspensionlog(request):
+    suspensionlogs = yt_paginate(
+        UserSuspensionLog.objects.all(),
+        per_page=50,
+        page_number=request.GET.get('page', 1)
+    )
+    context = {'suspensionlogs': suspensionlogs, }
+    return render(request, 'spirit/user/admin/suspensionlog.html', context)

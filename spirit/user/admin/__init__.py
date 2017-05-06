@@ -6,7 +6,7 @@ default_app_config = 'spirit.user.admin.apps.SpiritUserAdminConfig'
 
 
 from django.contrib import admin
-from ..models import UserProfile
+from ..models import UserProfile, UserSuspensionLog
 
 
 class UserProfileAdmin(admin.ModelAdmin):
@@ -16,3 +16,12 @@ class UserProfileAdmin(admin.ModelAdmin):
 
 
 admin.site.register(UserProfile, UserProfileAdmin)
+
+
+class UserSuspensionLogAdmin(admin.ModelAdmin):
+    search_fields = ('user__username', )
+    list_display = ('__str__', 'date_created', 'suspension_reason')
+    raw_id_fields = ('user', 'suspended_by')
+
+
+admin.site.register(UserSuspensionLog, UserSuspensionLogAdmin)
