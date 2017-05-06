@@ -27,6 +27,6 @@
     <ul class="tabs">
 		<li><a class="tab-link{% ifequal active_tab 0 %} is-selected{% endifequal %}" href="{% url "spirit:user:detail" pk=p_user.pk slug=p_user.st.slug %}" >{% trans "Comments" %} ({{ p_user.st.comment_count }})</a></li><!--
 	 --><li><a class="tab-link{% ifequal active_tab 1 %} is-selected{% endifequal %}" href="{% url "spirit:user:topics" pk=p_user.pk slug=p_user.st.slug %}" >{% trans "Topics" %} ({{ p_user.st.topic_count }})</a></li><!--
-	 --><li><a class="tab-link{% ifequal active_tab 2 %} is-selected{% endifequal %}" href="{% url "spirit:user:likes" pk=p_user.pk slug=p_user.st.slug %}" >{% trans "Likes given" %} ({{ p_user.st.given_likes_count }})</a></li>
+	 --><li><a class="tab-link{% ifequal active_tab 2 %} is-selected{% endifequal %}" href="{% url "spirit:user:likes" pk=p_user.pk slug=p_user.st.slug %}" >{% trans "Likes given" %} ({{ p_user.st.given_likes_count }})</a></li><!--
 	 --><li><a class="tab-link{% ifequal active_tab 3 %} is-selected{% endifequal %}" href="{% url "spirit:user:likes-received" pk=p_user.pk slug=p_user.st.slug %}" >{% trans "Likes received" %} ({{ p_user.st.received_likes_count }})</a></li>
 	</ul>
