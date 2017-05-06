@@ -10,12 +10,12 @@ from django.utils.translation import ugettext as _
 from djconfig import config
 
 from spirit.core.utils.paginator import yt_paginate
-from spirit.core.utils.decorators import administrator_required
+from spirit.core.utils.decorators import administrator_required, moderator_required
 from .forms import CommentFlagForm
 from ..models import CommentFlag, Flag
 
 
-@administrator_required
+@moderator_required
 def detail(request, pk):
     flag = get_object_or_404(CommentFlag, pk=pk)
 
@@ -44,7 +44,7 @@ def detail(request, pk):
     return render(request, 'spirit/comment/flag/admin/detail.html', context)
 
 
-@administrator_required
+@moderator_required
 def _index(request, queryset, template):
     flags = yt_paginate(
         queryset,

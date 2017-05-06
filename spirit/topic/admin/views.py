@@ -7,11 +7,11 @@ from django.shortcuts import render
 from djconfig import config
 
 from ...core.utils.paginator import yt_paginate
-from ...core.utils.decorators import administrator_required
+from ...core.utils.decorators import administrator_required, moderator_required
 from ..models import Topic
 
 
-@administrator_required
+@moderator_required
 def _index(request, queryset, template):
     topics = yt_paginate(
         queryset,

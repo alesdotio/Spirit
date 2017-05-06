@@ -68,7 +68,7 @@ def suspend(request, user_id):
     return render(request, 'spirit/user/admin/suspend.html', context)
 
 
-@administrator_required
+@moderator_required
 def _index(request, queryset, template):
     users = yt_paginate(
         queryset.order_by('-date_joined', '-pk'),

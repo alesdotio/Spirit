@@ -6,7 +6,11 @@
 
     {% for u in users %}
         <div class="row">
-            <a href="{{ u.get_absolute_url }}">{{ u.username }}</a> <a class="row-edit" href="{% url "spirit:admin:user:edit" user_id=u.pk %}"><i class="fa fa-cog"></i> {% trans "edit" %}</a>
+            <a href="{{ u.st.get_absolute_url }}">{{ u.username }}</a>
+            <div class="row-edit">
+                {% if user.st.is_administrator %}<a href="{% url "spirit:admin:user:edit" user_id=u.pk %}"><i class="fa fa-cog"></i> {% trans "edit" %}</a>{% endif %}
+                {% if user.st.is_administrator or user.st.is_moderator %}<a href="{% url "spirit:admin:user:suspend" user_id=u.pk %}"><i class="fa fa-ban"></i> {% trans "suspend" %}</a>{% endif %}
+            </div>
         </div>
     {% endfor %}
 

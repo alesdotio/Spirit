@@ -37,6 +37,7 @@ class AdminViewTest(TestCase):
         req = RequestFactory().get('/')
         req.user = self.user
         req.user.st.is_administrator = False
+        req.user.st.is_moderator = False
 
         self.assertRaises(PermissionDenied, flag_views.closed, req)
         self.assertRaises(PermissionDenied, flag_views.opened, req)

@@ -13,7 +13,7 @@ from ..comment.flag.models import CommentFlag
 from ..comment.like.models import CommentLike
 from ..comment.models import Comment
 from ..topic.models import Topic
-from ..core.utils.decorators import administrator_required
+from ..core.utils.decorators import administrator_required, moderator_required
 from .forms import BasicConfigForm
 
 User = get_user_model()
@@ -37,7 +37,7 @@ def config_basic(request):
     return render(request, 'spirit/admin/config_basic.html', context)
 
 
-@administrator_required
+@moderator_required
 def dashboard(request):
     # Strongly inaccurate counters below...
     context = {

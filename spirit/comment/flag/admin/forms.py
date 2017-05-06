@@ -4,10 +4,13 @@ from __future__ import unicode_literals
 
 from django import forms
 
+from django.utils.translation import ugettext_lazy as _
+
 from ..models import CommentFlag
 
 
 class CommentFlagForm(forms.ModelForm):
+    is_closed = forms.BooleanField(required=False, label=_('Close this report'))
 
     class Meta:
         model = CommentFlag
