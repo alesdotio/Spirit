@@ -27,10 +27,8 @@ class Renderer(mistune.Renderer):
 
     # Override
     def header(self, text, level, raw=None):
-        """Adds an id attribute to H1 with the text. This way it can be used for linking within the comment."""
-        if level == 1:
-            return '<h%d id="%s">%s</h%d>\n' % (level, conditional_escape(text), text, level)
-        return '<h%d>%s</h%d>\n' % (level, text, level)
+        """Adds an id attribute to titles with the text. This way it can be used for linking within the comment."""
+        return '<h%d id="%s">%s</h%d>\n' % (level, conditional_escape(text), text, level)
 
     # Override
     def autolink(self, link, is_email=False):
