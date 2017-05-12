@@ -16,6 +16,8 @@ urlpatterns = [
     url(r'^email-change/$', views.email_change, name='email-change'),
     url(r'^email-change/(?P<token>[0-9A-Za-z_\-\.]+)/$', views.email_change_confirm, name='email-change-confirm'),
 
+    url(r'^likes-recent/$', views.likes_recent, name='likes-recent'),
+
     url(r'^(?P<pk>\d+)/$', views.comments, kwargs={'slug': "", }, name='detail'),
     url(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/$', views.comments, name='detail'),
 

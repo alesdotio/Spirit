@@ -1,0 +1,19 @@
+{% extends "spirit/_base.html" %}
+
+{% load spirit_tags i18n tz %}
+
+{% block title %}{% trans "Recently received likes" %}{% endblock %}
+
+{% block content %}
+
+	{% include "spirit/user/_profile.html" with active_tab=4 %}
+
+	<ul>
+	{% for like in likes %}
+		<li>{{ like.date }} - {% blocktrans with user=like.user topic=like.comment.topic.title url=like.comment.get_absolute_url %}{{ user }} liked a comment on <a href="{{ url }}">{{ topic }}</a>.{% endblocktrans %}</li>
+	{% endfor %}
+	</ul>
+
+	{% render_paginator likes %}
+
+{% endblock %}

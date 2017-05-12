@@ -16,6 +16,7 @@ from django.http import HttpResponseNotFound
 
 from djconfig import config
 
+from spirit.comment.like.models import CommentLike
 from spirit.core.utils.models import slugify_field
 from ..core.utils.paginator import yt_paginate, paginate
 from .utils.email import send_email_change_email
@@ -220,6 +221,24 @@ def likes_received(request, pk, slug):
         context_name='comments',
         per_page=config.comments_per_page,
     )
+
+
+@login_required
+def likes_recent(request):
+    queryset = CommentLike.objects\
+        .filter(comment__user_id=request.user.pk, comment__is_removed=False, comment__topic__is_removed=False)\
+        .select_related('comment__topic')
+
+    items = yt_paginate(
+        queryset,
+        per_page=100,
+        page_number=request.GET.get('page', 1)
+    )
+
+    return render(request, 'spirit/user/profile_likes_recent.html', {
+        'p_user': request.user,
+        'likes': items
+    })
 
 
 def user_list(request):
