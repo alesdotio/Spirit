@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import mistune
 
 from django.conf import settings
-from django.utils.html import escape
+from django.utils.html import escape, conditional_escape
 
 
 def sanitize_url(url):
@@ -22,6 +22,15 @@ def sanitize_url(url):
 
 
 class Renderer(mistune.Renderer):
+
+    # <h1 id="Lel \" &gt;="" &lt;script&gt;alert(1)&lt;="" script&gt;&lt;h1"="">Lel \"&gt; &lt;script&gt;alert(1)&lt;/script&gt;&lt;h1</h1>
+
+    # Override
+    def header(self, text, level, raw=None):
+        """Adds an id attribute to H1 with the text. This way it can be used for linking within the comment."""
+        if level == 1:
+            return '<h%d id="%s">%s</h%d>\n' % (level, conditional_escape(text), text, level)
+        return '<h%d>%s</h%d>\n' % (level, text, level)
 
     # Override
     def autolink(self, link, is_email=False):
