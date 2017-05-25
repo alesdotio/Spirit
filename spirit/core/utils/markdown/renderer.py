@@ -5,7 +5,8 @@ from __future__ import unicode_literals
 import mistune
 
 from django.conf import settings
-from django.utils.html import escape, conditional_escape
+from django.utils.html import escape
+from django.utils.text import slugify
 
 
 def sanitize_url(url):
@@ -28,7 +29,7 @@ class Renderer(mistune.Renderer):
     # Override
     def header(self, text, level, raw=None):
         """Adds an id attribute to titles with the text. This way it can be used for linking within the comment."""
-        return '<h%d id="%s">%s</h%d>\n' % (level, conditional_escape(text), text, level)
+        return '<h%d id="%s">%s</h%d>\n' % (level, escape(slugify(text)), text, level)
 
     # Override
     def autolink(self, link, is_email=False):
