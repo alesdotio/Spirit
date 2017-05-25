@@ -105,7 +105,7 @@ class UserProfile(models.Model):
 
     @property
     def is_suspended(self):
-        if self.is_suspended_until and self.is_suspended_until > timezone.now().date():
+        if self.is_suspended_until and self.is_suspended_until > timezone.now():
             return True
         return False
 
