@@ -16,4 +16,5 @@ urlpatterns = [
     url(r'^suspensionlog/$', views.index_suspensionlog, name='index-suspensionlog'),
     url(r'^edit/(?P<user_id>\d+)/$', views.edit, name='edit'),
     url(r'^suspend/(?P<user_id>\d+)/$', views.suspend, name='suspend'),
+    url(r'^suspend-and-delete/(?P<user_id>\d+)/$', views.suspend_and_delete, name='suspend-and-delete'),
 ]

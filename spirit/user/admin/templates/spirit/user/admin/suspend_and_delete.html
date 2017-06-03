@@ -1,0 +1,23 @@
+{% extends "spirit/_base.html" %}
+
+{% load spirit_tags i18n tz %}
+
+{% block title %}{% trans "Suspend and delete" %} {{ p_user.username }}{% endblock %}
+
+{% block content %}
+
+	{% include "spirit/user/_profile_info.html" %}
+
+	<h1 class="headline">{% trans "Suspend and delete user" %}</h1>
+
+	<p>{{ comments_num }} {% trans 'comments' %}</p>
+	<p>{{ topics_num }} {% trans 'topics' %}</p>
+
+	<form action="." method="post">
+		{% csrf_token %}
+		{% include "spirit/_form.html" %}
+
+		<input class="button" type="submit" name="post" value="{% trans "Suspend and delete" %}" />
+	</form>
+
+{% endblock %}

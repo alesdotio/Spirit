@@ -32,3 +32,10 @@ class UserSuspendForm(forms.ModelForm):
     class Meta:
         model = UserProfile
         fields = ("is_suspended_until", "suspension_reason")
+
+
+class UserSuspendAndDeleteForm(forms.ModelForm):
+
+    class Meta:
+        model = UserProfile
+        fields = ("suspension_reason", )

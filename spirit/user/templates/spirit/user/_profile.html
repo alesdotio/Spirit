@@ -20,7 +20,8 @@
 
     {% if user.st.is_moderator %}
         <div class="profile-preferences">
-            <a class="button" href="{% url "spirit:admin:user:suspend" user_id=p_user.pk %}"><i class="fa fa-ban"></i> {% trans "Suspend user" %}</a>
+            <a class="button" href="{% url "spirit:admin:user:suspend" user_id=p_user.pk %}"><i class="fa fa-ban"></i> {% trans "Suspend" %}</a>
+            <a class="button" href="{% url "spirit:admin:user:suspend-and-delete" user_id=p_user.pk %}"><i class="fa fa-ban"></i> {% trans "Suspend and delete" %}</a>
         </div>
     {% endif %}
 

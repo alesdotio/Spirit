@@ -161,10 +161,11 @@ class UserSuspensionLog(models.Model):
 
     def __unicode__(self):
         if self.suspended_until:
-            return _('%(user)s was suspended by %(suspended_by)s until %(suspended_until)s') % {
+            return _('%(user)s was suspended by %(suspended_by)s until %(suspended_until)s, reason: %(suspension_reason)s') % {
                 'user': self.user.username,
                 'suspended_by': self.suspended_by.username,
                 'suspended_until': self.suspended_until,
+                'suspension_reason': self.suspension_reason,
             }
         else:
             return _('%(user)s suspension was lifted by %(suspended_by)s') % {
