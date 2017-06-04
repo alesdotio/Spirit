@@ -11,6 +11,9 @@ from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 
+import requests
+
+from spirit.core.utils import get_ip_from_request
 from ..forms import CleanEmailMixin
 
 User = get_user_model()
@@ -28,8 +31,26 @@ class RegistrationForm(CleanEmailMixin, UserCreationForm):
         fields = ("username", "email")
 
     def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
         super(RegistrationForm, self).__init__(*args, **kwargs)
         self.fields['email'].required = True  # Django model does not require it
+
+    def clean(self):
+        cd = self.cleaned_data
+        if self.request and settings.ST_ENABLE_STOPFORUMSPAM:
+            try:
+                ip = get_ip_from_request(self.request)
+                r = requests.get('http://api.stopforumspamm.org/api?json&ip=%s&email=%s' % (ip, cd['email']), timeout=5)
+                r.raise_for_status()
+            except (requests.ConnectionError, requests.Timeout):
+                pass
+            except requests.HTTPError:
+                pass
+            else:
+                response = r.json()
+                if response['ip']['appears'] > 0 or response['email']['appears'] > 0:
+                    raise forms.ValidationError(_('Your account is flagged as spam! If you believe this to be an error please contact the administrators.'))
+        return cd
 
     def clean_honeypot(self):
         """Check that nothing has been entered into the honeypot."""

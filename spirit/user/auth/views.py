@@ -61,7 +61,7 @@ def register(request, registration_form=RegistrationForm):
         return redirect(request.GET.get('next', reverse('spirit:user:update')))
 
     if request.method == 'POST':
-        form = registration_form(data=request.POST)
+        form = registration_form(data=request.POST, request=request)
 
         if not request.is_limited() and form.is_valid():
             user = form.save()

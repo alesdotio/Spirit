@@ -51,6 +51,8 @@ ST_INVALID_USERNAMES = []
 
 ST_ALLOW_ONE_USERNAME_CHANGE = False
 
+ST_ENABLE_STOPFORUMSPAM = False
+
 #
 # Django & Spirit settings defined below...
 #
