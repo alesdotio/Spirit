@@ -37,7 +37,7 @@ class RegistrationForm(CleanEmailMixin, UserCreationForm):
 
     def clean(self):
         cd = self.cleaned_data
-        if self.request and settings.ST_ENABLE_STOPFORUMSPAM:
+        if self.request and cd.get('email') and settings.ST_ENABLE_STOPFORUMSPAM:
             try:
                 ip = get_ip_from_request(self.request)
                 r = requests.get('http://api.stopforumspamm.org/api?json&ip=%s&email=%s' % (ip, cd['email']), timeout=5)
