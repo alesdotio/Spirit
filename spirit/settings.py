@@ -51,7 +51,7 @@ ST_INVALID_USERNAMES = []
 
 ST_ALLOW_ONE_USERNAME_CHANGE = False
 
-ST_ENABLE_STOPFORUMSPAM = False
+ST_REGISTRATION_CLEAN_METHODS = []  # a list of functions that are called in the registration clean method
 
 #
 # Django & Spirit settings defined below...
