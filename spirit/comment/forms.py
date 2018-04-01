@@ -7,6 +7,7 @@ import os
 from django import forms
 from django.conf import settings
 from django.core.files.storage import default_storage
+from django.core.validators import MaxLengthValidator
 from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import smart_bytes
 
@@ -18,9 +19,7 @@ from .models import Comment
 
 
 class CommentForm(forms.ModelForm):
-    comment = forms.CharField(
-        max_length=settings.ST_COMMENT_MAX_LEN,
-        widget=forms.Textarea)
+    comment = forms.CharField(widget=forms.Textarea)
     comment_hash = forms.CharField(
         max_length=32,
         widget=forms.HiddenInput,
@@ -30,13 +29,19 @@ class CommentForm(forms.ModelForm):
         model = Comment
         fields = ['comment']
 
-    def __init__(self, user=None, topic=None, *args, **kwargs):
+    def __init__(self, user, topic=None, *args, **kwargs):
         super(CommentForm, self).__init__(*args, **kwargs)
         self.user = user
         self.topic = topic
         self.mentions = None  # {username: User, }
         self.polls = None  # {polls: [], choices: []}
         self.fields['comment'].widget.attrs['placeholder'] = _("Write comment...")
+        if self.user and self.user.st and self.user.st.is_administrator:
+            pass  # don't add a max_length for admins
+        else:
+            self.fields['comment'].max_length = settings.ST_COMMENT_MAX_LEN
+            self.fields['comment'].widget.attrs['maxlength'] = settings.ST_COMMENT_MAX_LEN
+            self.fields['comment'].validators.append(MaxLengthValidator(settings.ST_COMMENT_MAX_LEN))
 
     def get_comment_hash(self):
         assert self.topic

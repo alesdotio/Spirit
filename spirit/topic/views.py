@@ -51,7 +51,7 @@ def publish(request, category_id=None):
             return redirect(topic.get_absolute_url())
     else:
         form = TopicForm(user=user, initial={'category': category_id})
-        cform = CommentForm()
+        cform = CommentForm(user=user)
 
     context = {
         'form': form,

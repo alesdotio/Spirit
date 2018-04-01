@@ -51,7 +51,7 @@ def publish(request, topic_id, pk=None):
             quote = markdown.quotify(comment.comment, comment.user.username)
             initial = {'comment': quote}
 
-        form = CommentForm(initial=initial)
+        form = CommentForm(user=user, initial=initial)
 
     context = {
         'form': form,
@@ -62,10 +62,11 @@ def publish(request, topic_id, pk=None):
 
 @login_required
 def update(request, pk):
+    user = request.user
     comment = Comment.objects.for_update_or_404(pk, request.user)
 
     if request.method == 'POST':
-        form = CommentForm(data=request.POST, instance=comment)
+        form = CommentForm(user=user, data=request.POST, instance=comment)
 
         if form.is_valid():
             pre_comment_update(comment=Comment.objects.get(pk=comment.pk))
@@ -73,7 +74,7 @@ def update(request, pk):
             post_comment_update(comment=comment)
             return redirect(request.POST.get('next', comment.get_absolute_url()))
     else:
-        form = CommentForm(instance=comment)
+        form = CommentForm(user=user, instance=comment)
 
     context = {'form': form, }
 

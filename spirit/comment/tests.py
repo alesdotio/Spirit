@@ -563,11 +563,17 @@ class CommentTemplateTagTests(TestCase):
         """
         should display simple comment form
         """
+        req = RequestFactory().get('/')
+        req.user = self.user
+        ctx = {
+            'topic': self.topic,
+            'request': req,
+        }
         Template(
             "{% load spirit_tags %}"
             "{% render_comments_form topic %}"
-        ).render(Context({'topic': self.topic, }))
-        context = render_comments_form(self.topic)
+        ).render(Context(ctx))
+        context = render_comments_form(ctx, self.topic)
         self.assertEqual(context['next'], None)
         self.assertIsInstance(context['form'], CommentForm)
         self.assertEqual(context['topic_id'], self.topic.pk)
@@ -588,18 +594,21 @@ class CommentFormTest(TestCase):
     def setUp(self):
         utils.cache_clear()
         self.user = utils.create_user()
+        self.admin_user = utils.create_user()
+        self.admin_user.st.is_administrator = True
+        self.admin_user.st.save()
         self.category = utils.create_category()
         self.topic = utils.create_topic(category=self.category)
 
     def test_comment_create(self):
         form_data = {'comment': 'foo', }
-        form = CommentForm(data=form_data)
+        form = CommentForm(user=self.user, data=form_data)
         self.assertEqual(form.is_valid(), True)
 
     def test_comment_markdown(self):
         form_data = {'comment': '**Spirit unicode: áéíóú** '
                                 '<script>alert();</script>', }
-        form = CommentForm(data=form_data)
+        form = CommentForm(user=self.user, data=form_data)
         self.assertEqual(form.is_valid(), True)
         form.user = self.user
         form.topic = self.topic
@@ -609,7 +618,7 @@ class CommentFormTest(TestCase):
 
     def test_comment_markdown_no_follow(self):
         form_data = {'comment': 'http://foo.com'}
-        form = CommentForm(data=form_data)
+        form = CommentForm(user=self.user, data=form_data)
         self.assertEqual(form.is_valid(), True)
         form.user = self.user
         form.topic = self.topic
@@ -626,7 +635,7 @@ class CommentFormTest(TestCase):
         """
         comment_txt = 'foo'
         form_data = {'comment': comment_txt}
-        form = CommentForm(data=form_data, topic=self.topic)
+        form = CommentForm(user=self.user, data=form_data, topic=self.topic)
         self.assertTrue(form.is_valid())
 
         comment_txt_to_hash = '{}thread-{}'.format(comment_txt, self.topic.pk)
@@ -640,7 +649,7 @@ class CommentFormTest(TestCase):
         """
         comment_hash = '1' * 32
         form_data = {'comment': 'foo', 'comment_hash': comment_hash}
-        form = CommentForm(data=form_data, topic=self.topic)
+        form = CommentForm(user=self.user, data=form_data, topic=self.topic)
         self.assertTrue(form.is_valid())
         self.assertEqual(form.get_comment_hash(), comment_hash)
 
@@ -718,7 +727,7 @@ class CommentFormTest(TestCase):
         """
         comment = 'a' * settings.ST_COMMENT_MAX_LEN
         form_data = {'comment': comment, }
-        form = CommentForm(data=form_data)
+        form = CommentForm(user=self.user, data=form_data)
         self.assertEqual(form.is_valid(), True)
 
     def test_comment_max_len_invalid(self):
@@ -727,8 +736,17 @@ class CommentFormTest(TestCase):
         """
         comment = 'a' * (settings.ST_COMMENT_MAX_LEN + 1)
         form_data = {'comment': comment, }
-        form = CommentForm(data=form_data)
+        form = CommentForm(user=self.user, data=form_data)
         self.assertEqual(form.is_valid(), False)
+
+    def test_comment_max_len_valid_for_admin(self):
+        """
+        Restrict comment len, but not for admins
+        """
+        comment = 'a' * (settings.ST_COMMENT_MAX_LEN + 1)
+        form_data = {'comment': comment, }
+        form = CommentForm(user=self.admin_user, data=form_data)
+        self.assertEqual(form.is_valid(), True)
 
 
 class CommentUtilsTest(TestCase):

@@ -59,7 +59,7 @@ def publish(request, user_id=None):
             return redirect(topic.get_absolute_url())
     else:
         tform = TopicForPrivateForm()
-        cform = CommentForm()
+        cform = CommentForm(user=user)
         initial = None
 
         if user_id:  # todo: move to form

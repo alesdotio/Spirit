@@ -11,9 +11,10 @@ from .forms import CommentForm
 from .models import MOVED, CLOSED, UNCLOSED, PINNED, UNPINNED
 
 
-@register.inclusion_tag('spirit/comment/_form.html')
-def render_comments_form(topic, next=None):
-    form = CommentForm()
+@register.inclusion_tag('spirit/comment/_form.html', takes_context=True)
+def render_comments_form(context, topic, next=None):
+    request = context['request']
+    form = CommentForm(user=request.user)
     return {'form': form, 'topic_id': topic.pk, 'next': next}
 
 
