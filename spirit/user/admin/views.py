@@ -86,6 +86,10 @@ def suspend_and_delete(request, user_id):
         messages.error(request, _("You cannot suspend another administrator or moderator!"))
         return redirect(user.st.get_absolute_url())
 
+    if user.date_joined < timezone.now() - datetime.timedelta(days=3):
+        messages.error(request, _("You cannot delete a user older than 3 days!"))
+        return redirect(user.st.get_absolute_url())
+
     if request.method == 'POST':
         form = UserSuspendAndDeleteForm(data=request.POST)
 
