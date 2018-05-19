@@ -537,6 +537,23 @@ class TopicFormTest(TestCase):
             Topic.objects.get(pk=topic.pk).reindex_at,
             yesterday)
 
+    def test_topic_publish_invalid_title_with_space(self):
+        """
+        Create topic with an invalid title (spaces only)
+        """
+        category = utils.create_category()
+        form_data = {'comment': 'foo', 'title': '', 'category': category.pk}
+        form = TopicForm(self.user, data=form_data)
+        self.assertEqual(form.is_valid(), False)
+
+        form_data = {'comment': 'foo', 'title': ' ', 'category': category.pk}
+        form = TopicForm(self.user, data=form_data)
+        self.assertEqual(form.is_valid(), False)
+
+        form_data = {'comment': 'foo', 'title': '  ', 'category': category.pk}
+        form = TopicForm(self.user, data=form_data)
+        self.assertEqual(form.is_valid(), False)
+
 
 class TopicUtilsTest(TestCase):
 

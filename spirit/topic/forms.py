@@ -39,6 +39,13 @@ class TopicForm(forms.ModelForm):
         if self.instance.pk and not user.st.is_moderator:
             del self.fields['category']
 
+    def clean_title(self):
+        title = self.cleaned_data['title']
+        title = title.strip()
+        if not title:
+            raise forms.ValidationError(_('This field is required.'))
+        return title
+
     def get_category(self):
         return self.cleaned_data['category']
 
