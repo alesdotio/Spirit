@@ -6,6 +6,7 @@ import logging
 import mistune
 
 from django.utils import timezone
+from django.conf import settings
 
 from spirit.comment.poll.models import CommentPoll, CommentPollChoice, PollMode
 
@@ -29,7 +30,7 @@ class PollParser(object):
         self.data = data
         self.polls = polls
         self.close_max_len = 5  # Fixed length
-        self.choices_limit = 20  # make a setting
+        self.choices_limit = settings.ST_POLL_CHOICES_LIMIT  # make a setting
         self.cleaned_data = {}
 
         self._field_name = CommentPoll._meta.get_field('name')
