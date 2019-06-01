@@ -59,6 +59,12 @@ class Markdown(mistune.Markdown):
     def output_gfycat(self):
         return self.renderer.gfycat(video_id=self.token['video_id'])
 
+    def output_twitch_channel(self):
+        return self.renderer.twitch_channel(channel=self.token['channel'])
+
+    def output_twitch_video(self):
+        return self.renderer.twitch_video(video_id=self.token['video_id'])
+
     def output_poll(self):
         try:
             name = self.token['name']

@@ -124,6 +124,16 @@ class Renderer(mistune.Renderer):
         return '<span class="video"><iframe src="https://gfycat.com/ifr/{video_id}" ' \
                'frameborder="0" scrolling="no" allowfullscreen></iframe></span>\n'.format(video_id=video_id)
 
+    def twitch_channel(self, channel):
+        return '<span class="video"><iframe src="https://player.twitch.tv/?channel={channel}&autoplay=true" ' \
+               'width="100%" height="400" frameborder="0" scrolling="no" allowfullscreen="false">' \
+               '</iframe></span>\n'.format(channel=channel)
+
+    def twitch_video(self, video_id):
+        return '<span class="video"><iframe src="https://player.twitch.tv/?video=v{video_id}&autoplay=true" ' \
+               'width="100%" height="400" frameborder="0" scrolling="no" allowfullscreen="false">' \
+               '</iframe></span>\n'.format(video_id=video_id)
+
     def poll(self, name):
         return '<poll name={name}>\n'.format(name=name)
 

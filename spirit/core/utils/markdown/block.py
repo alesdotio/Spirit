@@ -95,6 +95,22 @@ class BlockGrammar(mistune.BlockGrammar):
         r'(?:\n+|$)'
     )
 
+    # Try to get the channel. Works for URLs of the form:
+    # https://www.twitch.tv/lirik
+    twitch_channel = re.compile(
+        r'^https?://(www\.)?'
+        r'twitch\.tv/'
+        r'(?P<channel>\w+)'
+    )
+
+    # Try to get the video. Works for URLs of the form:
+    # https://www.twitch.tv/videos/432540384
+    twitch_video = re.compile(
+        r'^https?://(www\.)?'
+        r'twitch\.tv/videos/'
+        r'(?P<video_id>\w+)'
+    )
+
     # Capture polls:
     # [poll name=foo min=1 max=1 close=1d mode=default]
     # # Which opt you prefer?
@@ -126,6 +142,8 @@ class BlockLexer(mistune.BlockLexer):
     default_rules.insert(0, 'youtube')
     default_rules.insert(0, 'vimeo')
     default_rules.insert(0, 'gfycat')
+    default_rules.insert(0, 'twitch_channel')
+    default_rules.insert(0, 'twitch_video')
     default_rules.insert(0, 'poll')
 
     def __init__(self, rules=None, **kwargs):
@@ -180,6 +198,18 @@ class BlockLexer(mistune.BlockLexer):
         self.tokens.append({
             'type': 'gfycat',
             'video_id': m.group("id")
+        })
+
+    def parse_twitch_channel(self, m):
+        self.tokens.append({
+            'type': 'twitch_channel',
+            'channel': m.group("channel")
+        })
+
+    def parse_twitch_video(self, m):
+        self.tokens.append({
+            'type': 'twitch_video',
+            'video_id': m.group("video_id")
         })
 
     def parse_poll(self, m):
